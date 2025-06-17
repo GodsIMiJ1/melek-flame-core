@@ -106,10 +106,13 @@ export class FlameLoopEngine {
   }
 
   getStatus() {
+    const memoryRecall = this.memory.recall()
+    const memorySize = Array.isArray(memoryRecall) ? memoryRecall.length : (memoryRecall ? 1 : 0)
+    
     return {
       isRunning: this.isRunning,
       currentCycle: this.currentCycle,
-      memorySize: this.memory.recall().length,
+      memorySize,
       recentCycles: this.memory.getRecentCycles(3)
     }
   }
