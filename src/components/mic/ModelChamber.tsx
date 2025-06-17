@@ -28,6 +28,18 @@ export const ModelChamber = () => {
     return availableModels.some(available => available.includes(modelName.split(':')[0]));
   };
 
+  const handleRefreshModels = async () => {
+    setLoading(true);
+    try {
+      const models = await getOllamaModels();
+      setAvailableModels(models);
+    } catch (error) {
+      console.error("Failed to refresh models:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="h-full p-4 space-y-4">
       <h3 className="text-lg font-semibold text-gold-400 border-b border-gold-400/30 pb-2">
@@ -106,7 +118,7 @@ export const ModelChamber = () => {
               <Button 
                 size="sm" 
                 className="bg-orange-500/20 hover:bg-orange-500/30 text-xs"
-                onClick={() => setLoading(true) || getOllamaModels().then(setAvailableModels).finally(() => setLoading(false))}
+                onClick={handleRefreshModels}
               >
                 🔄 Refresh Models
               </Button>
