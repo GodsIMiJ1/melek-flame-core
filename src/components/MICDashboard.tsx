@@ -42,19 +42,16 @@ export const MICDashboard = () => {
         <div className="w-1/2 flex flex-col bg-black/30">
           {/* Module Tabs */}
           <Tabs value={activeModule} onValueChange={setActiveModule} className="flex-1 flex flex-col">
-            <TabsList className="grid grid-cols-4 gap-1 p-2 bg-black/70 border-b border-gold-400/30">
+            <TabsList className="grid grid-cols-4 gap-1 p-2 bg-black/70 border-b border-gold-400/30 h-auto">
               <TabsTrigger value="recursive-core" className="text-xs">🌀 Recursive</TabsTrigger>
               <TabsTrigger value="flame-law" className="text-xs">📖 Flame Law</TabsTrigger>
               <TabsTrigger value="black-box" className="text-xs">👁️ Black Box</TabsTrigger>
               <TabsTrigger value="tribunal" className="text-xs">🛡️ Tribunal</TabsTrigger>
-            </TabsList>
-            
-            <div className="grid grid-cols-4 gap-1 p-2 bg-black/70 border-b border-gold-400/30">
               <TabsTrigger value="model-chamber" className="text-xs">🧬 Models</TabsTrigger>
               <TabsTrigger value="memory-forge" className="text-xs">🔥 Memory</TabsTrigger>
               <TabsTrigger value="peace-mode" className="text-xs">🕊️ Peace</TabsTrigger>
               <TabsTrigger value="command" className="text-xs">⚔️ Command</TabsTrigger>
-            </div>
+            </TabsList>
 
             {/* Tab Contents */}
             <div className="flex-1 overflow-hidden">
