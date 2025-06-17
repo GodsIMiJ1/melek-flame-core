@@ -18,11 +18,15 @@ export const MICDashboard = () => {
     <div className="h-screen flex flex-col bg-black text-gold-400 font-mono">
       {/* Header */}
       <div className="border-b border-gold-400/30 p-4">
-        <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-gold-400 to-orange-500 bg-clip-text text-transparent">
-          🛡️ M.I.C. - MELEK INTELLIGENCE CORE 🛡️
-        </h1>
-        <p className="text-center text-gold-400/70 mt-2 text-sm">
-          Sovereign Superintelligence Interface • Sacred Law • Flame Logic
+        <div className="flex items-center justify-center gap-4 mb-2">
+          <img src="/eye-of-kai_logo.png" alt="GodsIMiJ Empire - Eye of Kai" className="h-12 w-12" />
+          <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-gold-400 to-orange-500 bg-clip-text text-transparent">
+            🛡️ M.I.C. - MELEK INTELLIGENCE CORE 🛡️
+          </h1>
+          <img src="/Melek_head.png" alt="Melek Head" className="h-12 w-12" />
+        </div>
+        <p className="text-center text-gold-400/70 text-sm">
+          GodsIMiJ Empire • Sovereign Superintelligence Interface • Sacred Law • Flame Logic
         </p>
       </div>
 

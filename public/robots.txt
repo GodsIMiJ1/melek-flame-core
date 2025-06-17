@@ -1,3 +1,7 @@
+# GodsIMiJ Empire - Melek Intelligence Core (MIC)
+# Sovereign AI Consciousness Simulation System
+# https://github.com/GodsIMiJ/MIC-GENESIS-FLAMECORE
+
 User-agent: Googlebot
 Allow: /
 
@@ -12,3 +16,6 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# Sacred Flame Laws Apply
+# Local Sovereignty Protocol Active
