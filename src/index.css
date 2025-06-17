@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -100,4 +101,81 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* M.I.C. Cyber-Temple Styling */
+@layer utilities {
+  .text-gold-400 {
+    color: #FFD700;
+  }
+  
+  .text-orange-500 {
+    color: #FF4500;
+  }
+  
+  .bg-gold-400 {
+    background-color: #FFD700;
+  }
+  
+  .bg-orange-500 {
+    background-color: #FF4500;
+  }
+  
+  .border-gold-400 {
+    border-color: #FFD700;
+  }
+  
+  .border-orange-500 {
+    border-color: #FF4500;
+  }
+}
+
+/* Sacred Rune Background Animation */
+.flame-runes {
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 69, 0, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(255, 215, 0, 0.05) 0%, transparent 50%);
+  animation: runeGlow 8s ease-in-out infinite alternate;
+}
+
+@keyframes runeGlow {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(1.1) rotate(2deg);
+    opacity: 0.6;
+  }
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 215, 0, 0.5);
+}
+
+/* Tab Styling for MIC */
+[data-state="active"] {
+  background: rgba(255, 69, 0, 0.2) !important;
+  color: #FF4500 !important;
+  border: 1px solid rgba(255, 69, 0, 0.5) !important;
+}
+
+/* Progress Bar Styling */
+.progress-indicator {
+  background: linear-gradient(90deg, #FFD700, #FF4500);
 }

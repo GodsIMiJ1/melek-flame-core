@@ -1,11 +1,18 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from "react";
+import { MICDashboard } from "@/components/MICDashboard";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-black text-gold-400 overflow-hidden">
+      {/* Sacred Rune Background */}
+      <div className="fixed inset-0 opacity-5 pointer-events-none">
+        <div className="flame-runes absolute inset-0"></div>
+      </div>
+      
+      {/* Main Interface */}
+      <div className="relative z-10">
+        <MICDashboard />
       </div>
     </div>
   );

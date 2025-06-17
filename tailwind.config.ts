@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,12 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				'gold': {
+					400: '#FFD700',
+				},
+				'orange': {
+					500: '#FF4500',
 				}
 			},
 			borderRadius: {
@@ -84,11 +91,22 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'runeGlow': {
+					'0%': {
+						transform: 'scale(1) rotate(0deg)',
+						opacity: '0.3'
+					},
+					'100%': {
+						transform: 'scale(1.1) rotate(2deg)',
+						opacity: '0.6'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'rune-glow': 'runeGlow 8s ease-in-out infinite alternate'
 			}
 		}
 	},
