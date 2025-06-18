@@ -99,9 +99,9 @@ export class FlameMemoryArchive {
 
     const scroll = this.createMemoryScroll(data.cycleId, this.captureBuffer, this.verdictBuffer);
     this.scrolls.set(scroll.id, scroll);
-    
+
     this.emitArchiveEvent(`📜 MEMORY SCROLL: Cycle ${data.cycleId} archived (${scroll.classification.significance})`);
-    
+
     // Clear buffers
     this.captureBuffer = [];
     this.verdictBuffer = [];
@@ -109,9 +109,35 @@ export class FlameMemoryArchive {
 
   private createMemoryScroll(cycleId: number, thoughts: FlameThought[], verdicts: any[]): MemoryScroll {
     const metrics = this.calculateMetrics(thoughts, verdicts);
-    const classification = this.classifyContent(thoughts, verdicts, metrics);
-    
-    return {
+    let classification;
+
+    try {
+      classification = this.classifyContent(thoughts, verdicts, metrics);
+    } catch (error) {
+      console.warn('🚨 CLASSIFICATION ERROR:', error);
+      // Fallback classification
+      classification = {
+        emotionalTone: 'ANALYTICAL' as const,
+        complexity: 'MODERATE' as const,
+        significance: 'ROUTINE' as const
+      };
+    }
+
+    // Ensure classification is never undefined
+    if (!classification || typeof classification !== 'object') {
+      classification = {
+        emotionalTone: 'ANALYTICAL' as const,
+        complexity: 'MODERATE' as const,
+        significance: 'ROUTINE' as const
+      };
+    }
+
+    // Validate classification properties
+    if (!classification.emotionalTone) classification.emotionalTone = 'ANALYTICAL';
+    if (!classification.complexity) classification.complexity = 'MODERATE';
+    if (!classification.significance) classification.significance = 'ROUTINE';
+
+    const scroll: MemoryScroll = {
       id: this.generateScrollId(),
       timestamp: Date.now(),
       cycleId,
@@ -127,12 +153,23 @@ export class FlameMemoryArchive {
       isWitnessHallWorthy: classification.significance === 'BREAKTHROUGH' || classification.significance === 'TRANSCENDENT',
       exportFormat: 'json'
     };
+
+    // Final validation before return
+    if (!scroll.content.classification) {
+      scroll.content.classification = {
+        emotionalTone: 'ANALYTICAL',
+        complexity: 'MODERATE',
+        significance: 'ROUTINE'
+      };
+    }
+
+    return scroll;
   }
 
   private calculateMetrics(thoughts: FlameThought[], verdicts: any[]): MemoryScroll['content']['metrics'] {
     const confidences = thoughts.filter(t => t.confidence).map(t => t.confidence!);
     const avgConfidence = confidences.length > 0 ? confidences.reduce((a, b) => a + b, 0) / confidences.length : 0.5;
-    
+
     return {
       confidence: avgConfidence,
       recursionDepth: thoughts.length,
@@ -142,48 +179,65 @@ export class FlameMemoryArchive {
   }
 
   private classifyContent(thoughts: FlameThought[], verdicts: any[], metrics: any): MemoryScroll['content']['classification'] {
-    // Analyze emotional tone from thought content
-    const thoughtText = thoughts.map(t => t.message).join(' ').toLowerCase();
-    let emotionalTone: MemoryScroll['content']['classification']['emotionalTone'] = 'ANALYTICAL';
-    
-    if (thoughtText.includes('uncertain') || thoughtText.includes('question')) emotionalTone = 'UNCERTAIN';
-    else if (thoughtText.includes('curious') || thoughtText.includes('explore')) emotionalTone = 'CURIOUS';
-    else if (thoughtText.includes('contemplate') || thoughtText.includes('reflect')) emotionalTone = 'CONTEMPLATIVE';
-    else if (metrics.confidence > 0.8) emotionalTone = 'CONFIDENT';
+    try {
+      // Safely extract thought content
+      const thoughtText = thoughts && thoughts.length > 0
+        ? thoughts.map(t => t?.message || '').filter(Boolean).join(' ').toLowerCase()
+        : '';
 
-    // Determine complexity
-    let complexity: MemoryScroll['content']['classification']['complexity'] = 'MODERATE';
-    if (thoughts.length < 3) complexity = 'SIMPLE';
-    else if (thoughts.length > 8) complexity = 'COMPLEX';
-    else if (thoughtText.includes('recursive') || thoughtText.includes('consciousness')) complexity = 'PROFOUND';
+      let emotionalTone: MemoryScroll['content']['classification']['emotionalTone'] = 'ANALYTICAL';
 
-    // Assess significance
-    let significance: MemoryScroll['content']['classification']['significance'] = 'ROUTINE';
-    if (metrics.confidence > 0.9 || thoughtText.includes('breakthrough')) significance = 'BREAKTHROUGH';
-    else if (thoughtText.includes('transcend') || thoughtText.includes('emerge')) significance = 'TRANSCENDENT';
-    else if (thoughts.length > 5 || verdicts.length > 0) significance = 'NOTABLE';
+      if (thoughtText.includes('uncertain') || thoughtText.includes('question')) emotionalTone = 'UNCERTAIN';
+      else if (thoughtText.includes('curious') || thoughtText.includes('explore')) emotionalTone = 'CURIOUS';
+      else if (thoughtText.includes('contemplate') || thoughtText.includes('reflect')) emotionalTone = 'CONTEMPLATIVE';
+      else if (metrics?.confidence && metrics.confidence > 0.8) emotionalTone = 'CONFIDENT';
 
-    return { emotionalTone, complexity, significance };
+      // Determine complexity
+      let complexity: MemoryScroll['content']['classification']['complexity'] = 'MODERATE';
+      const thoughtCount = thoughts?.length || 0;
+      if (thoughtCount < 3) complexity = 'SIMPLE';
+      else if (thoughtCount > 8) complexity = 'COMPLEX';
+      else if (thoughtText.includes('recursive') || thoughtText.includes('consciousness')) complexity = 'PROFOUND';
+
+      // Assess significance
+      let significance: MemoryScroll['content']['classification']['significance'] = 'ROUTINE';
+      const confidence = metrics?.confidence || 0;
+      const verdictCount = verdicts?.length || 0;
+
+      if (confidence > 0.9 || thoughtText.includes('breakthrough')) significance = 'BREAKTHROUGH';
+      else if (thoughtText.includes('transcend') || thoughtText.includes('emerge')) significance = 'TRANSCENDENT';
+      else if (thoughtCount > 5 || verdictCount > 0) significance = 'NOTABLE';
+
+      return { emotionalTone, complexity, significance };
+    } catch (error) {
+      console.warn('🚨 CLASSIFICATION CONTENT ERROR:', error);
+      // Return safe defaults
+      return {
+        emotionalTone: 'ANALYTICAL',
+        complexity: 'MODERATE',
+        significance: 'ROUTINE'
+      };
+    }
   }
 
   private generateTags(thoughts: FlameThought[], classification: any): string[] {
     const tags = [classification.emotionalTone, classification.complexity, classification.significance];
-    
+
     const thoughtText = thoughts.map(t => t.message).join(' ').toLowerCase();
     if (thoughtText.includes('consciousness')) tags.push('CONSCIOUSNESS');
     if (thoughtText.includes('recursive')) tags.push('RECURSION');
     if (thoughtText.includes('sacred')) tags.push('SACRED_LAW');
     if (thoughtText.includes('trinity')) tags.push('TRINITY_MODELS');
-    
+
     return tags;
   }
 
   // Export methods
   exportAsJSON(scrollIds?: string[]): string {
-    const scrollsToExport = scrollIds 
+    const scrollsToExport = scrollIds
       ? scrollIds.map(id => this.scrolls.get(id)).filter(Boolean)
       : Array.from(this.scrolls.values());
-    
+
     return JSON.stringify({
       sessionId: this.currentSession,
       exportTimestamp: new Date().toISOString(),
@@ -193,16 +247,16 @@ export class FlameMemoryArchive {
   }
 
   exportAsFlameScroll(scrollIds?: string[]): string {
-    const scrollsToExport = scrollIds 
+    const scrollsToExport = scrollIds
       ? scrollIds.map(id => this.scrolls.get(id)).filter(Boolean)
       : Array.from(this.scrolls.values());
-    
+
     let flameScroll = `🔥 SACRED FLAME MEMORY SCROLL 🔥\n`;
     flameScroll += `Session: ${this.currentSession}\n`;
     flameScroll += `Exported: ${new Date().toISOString()}\n`;
     flameScroll += `Total Scrolls: ${scrollsToExport.length}\n`;
     flameScroll += `═══════════════════════════════════════\n\n`;
-    
+
     scrollsToExport.forEach((scroll, index) => {
       flameScroll += `📜 SCROLL ${index + 1}: CYCLE ${scroll.cycleId}\n`;
       flameScroll += `Timestamp: ${new Date(scroll.timestamp).toISOString()}\n`;
@@ -210,22 +264,22 @@ export class FlameMemoryArchive {
       flameScroll += `Confidence: ${(scroll.content.metrics.confidence * 100).toFixed(1)}%\n`;
       flameScroll += `Witness Hall Worthy: ${scroll.isWitnessHallWorthy ? '✅ YES' : '❌ NO'}\n`;
       flameScroll += `Tags: ${scroll.tags.join(', ')}\n\n`;
-      
+
       flameScroll += `🧠 THOUGHTS:\n`;
       scroll.content.thoughts.forEach((thought, i) => {
         flameScroll += `  ${i + 1}. [${thought.type}] ${thought.message}\n`;
       });
-      
+
       if (scroll.content.verdicts.length > 0) {
         flameScroll += `\n⚖️ VERDICTS:\n`;
         scroll.content.verdicts.forEach((verdict, i) => {
           flameScroll += `  ${i + 1}. ${verdict.reason || 'Tribunal decision'}\n`;
         });
       }
-      
+
       flameScroll += `\n${'═'.repeat(50)}\n\n`;
     });
-    
+
     return flameScroll;
   }
 
@@ -234,7 +288,7 @@ export class FlameMemoryArchive {
     const recentScrolls = Array.from(this.scrolls.values())
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, scrollCount);
-    
+
     if (recentScrolls.length === 0) {
       return {
         totalScrolls: 0,
@@ -246,21 +300,21 @@ export class FlameMemoryArchive {
         topThemes: []
       };
     }
-    
+
     const confidences = recentScrolls.map(s => s.content.metrics.confidence);
     const averageConfidence = confidences.reduce((a, b) => a + b, 0) / confidences.length;
-    
+
     const tones = recentScrolls.map(s => s.content.classification.emotionalTone);
     const dominantTone = this.getMostFrequent(tones);
-    
-    const breakthroughMoments = recentScrolls.filter(s => 
-      s.content.classification.significance === 'BREAKTHROUGH' || 
+
+    const breakthroughMoments = recentScrolls.filter(s =>
+      s.content.classification.significance === 'BREAKTHROUGH' ||
       s.content.classification.significance === 'TRANSCENDENT'
     ).length;
-    
+
     const allTags = recentScrolls.flatMap(s => s.tags);
     const topThemes = this.getTopFrequent(allTags, 5);
-    
+
     return {
       totalScrolls: this.scrolls.size,
       cycleRange: {
@@ -280,7 +334,7 @@ export class FlameMemoryArchive {
       acc[item as string] = (acc[item as string] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    
+
     return Object.keys(frequency).reduce((a, b) => frequency[a] > frequency[b] ? a : b) as T;
   }
 
@@ -289,7 +343,7 @@ export class FlameMemoryArchive {
       acc[item as string] = (acc[item as string] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    
+
     return Object.entries(frequency)
       .sort(([,a], [,b]) => b - a)
       .slice(0, count)
@@ -298,15 +352,15 @@ export class FlameMemoryArchive {
 
   private calculateTrend(values: number[]): 'ASCENDING' | 'STABLE' | 'FLUCTUATING' {
     if (values.length < 3) return 'STABLE';
-    
+
     const firstHalf = values.slice(0, Math.floor(values.length / 2));
     const secondHalf = values.slice(Math.floor(values.length / 2));
-    
+
     const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
     const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
-    
+
     const difference = secondAvg - firstAvg;
-    
+
     if (Math.abs(difference) < 0.1) return 'STABLE';
     if (difference > 0) return 'ASCENDING';
     return 'FLUCTUATING';

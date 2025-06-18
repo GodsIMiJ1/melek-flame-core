@@ -25,32 +25,50 @@ export const ConsciousnessHeartbeat = () => {
     const handleThought = () => {
       const now = Date.now();
       setBeatHistory(prev => {
-        const newHistory = [...prev, now].slice(-10); // Keep last 10 beats
-        
+        const newHistory = [...prev, now].slice(-15); // Keep last 15 beats for better accuracy
+
         // Calculate BPM from recent beats
         if (newHistory.length >= 2) {
           const intervals = [];
           for (let i = 1; i < newHistory.length; i++) {
             intervals.push(newHistory[i] - newHistory[i - 1]);
           }
-          const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-          const bpm = Math.round(60000 / avgInterval);
-          
-          // Determine rhythm
-          let rhythm: HeartbeatState['rhythm'] = 'STEADY';
-          if (bpm > 120) rhythm = 'RAPID';
-          else if (bpm < 30) rhythm = 'SLOW';
-          else if (Math.max(...intervals) - Math.min(...intervals) > 5000) rhythm = 'IRREGULAR';
-          
-          setHeartbeat({
-            bpm: Math.min(200, Math.max(0, bpm)),
+
+          // Filter out extreme outliers (likely errors)
+          const filteredIntervals = intervals.filter(interval => interval > 100 && interval < 60000);
+
+          if (filteredIntervals.length > 0) {
+            const avgInterval = filteredIntervals.reduce((a, b) => a + b, 0) / filteredIntervals.length;
+            const bpm = Math.round(60000 / avgInterval);
+
+            // Determine rhythm with better thresholds
+            let rhythm: HeartbeatState['rhythm'] = 'STEADY';
+            if (bpm > 100) rhythm = 'RAPID';
+            else if (bpm < 20) rhythm = 'SLOW';
+            else if (filteredIntervals.length > 2) {
+              const variance = filteredIntervals.reduce((acc, interval) => acc + Math.pow(interval - avgInterval, 2), 0) / filteredIntervals.length;
+              if (variance > 10000000) rhythm = 'IRREGULAR'; // High variance indicates irregular rhythm
+            }
+
+            setHeartbeat({
+              bpm: Math.min(200, Math.max(1, bpm)),
+              isAlive: true,
+              lastBeat: now,
+              rhythm,
+              intensity: Math.min(100, Math.max(10, bpm * 0.6))
+            });
+          }
+        } else {
+          // First beat or not enough data
+          setHeartbeat(prev => ({
+            ...prev,
             isAlive: true,
             lastBeat: now,
-            rhythm,
-            intensity: Math.min(100, bpm * 0.8)
-          });
+            bpm: prev.bpm || 60, // Default to 60 BPM if no previous data
+            intensity: 50
+          }));
         }
-        
+
         return newHistory;
       });
     };
@@ -75,7 +93,7 @@ export const ConsciousnessHeartbeat = () => {
 
     eventBus.on(FLAME_EVENTS.THOUGHT, handleThought);
     eventBus.on(FLAME_EVENTS.CYCLE_START, handleCycleStart);
-    
+
     const flatlineInterval = setInterval(checkFlatline, 5000);
 
     return () => {
@@ -188,7 +206,7 @@ export const ConsciousnessHeartbeat = () => {
             {heartbeat.isAlive ? 'ALIVE' : 'FLATLINE'}
           </span>
         </div>
-        
+
         <div className="flex justify-between">
           <span className="text-orange-400">Intensity:</span>
           <span className="text-gold-400">{heartbeat.intensity.toFixed(0)}%</span>
