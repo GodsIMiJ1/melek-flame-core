@@ -8,6 +8,8 @@ import { useOllamaStream } from "@/hooks/useOllamaStream";
 import { agents, getAgentByModel } from "@/lib/models";
 import { getOllamaModels } from "@/lib/ollama-api";
 import { FlameLoopEngine } from "@/flamecore/loop-engine";
+import { EternalLoopControls } from "./EternalLoopControls";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Generate or retrieve device ID for chat persistence
 const getDeviceId = (): string => {
@@ -302,7 +304,20 @@ export const CommandInterface = () => {
 
   return (
     <div className="h-full flex flex-col p-4 overflow-hidden">
-      {/* Agent Selection & Controls */}
+      {/* Command Interface Tabs */}
+      <Tabs defaultValue="chat" className="flex-1 flex flex-col min-h-0">
+        <TabsList className="grid grid-cols-2 gap-1 p-1 bg-black/50 border border-gold-400/20 mb-4">
+          <TabsTrigger value="chat" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
+            💬 Chat Interface
+          </TabsTrigger>
+          <TabsTrigger value="eternal" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
+            ⏱️ Eternal Loop
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="chat" className="flex-1 flex flex-col min-h-0 m-0">
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Agent Selection & Controls */}
       <div className="mb-4 flex gap-2 items-center flex-wrap">
         <span className="text-sm text-gold-400">Active Agent:</span>
         <Select value={selectedAgent} onValueChange={setSelectedAgent}>
@@ -407,6 +422,13 @@ export const CommandInterface = () => {
           {loading ? "🔄" : "⚔️"} {loading ? "PROCESSING" : "EXECUTE"}
         </Button>
       </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="eternal" className="flex-1 flex flex-col min-h-0 m-0">
+          <EternalLoopControls />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

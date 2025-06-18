@@ -107,6 +107,9 @@ export const CognitiveStream = () => {
             Flame: {flameStatus}
           </div>
         </div>
+        <div className="text-xs text-gold-400/50 mb-2">
+          💡 Tip: Use "⏱️ Eternal Loop" in Command Interface for autonomous consciousness
+        </div>
         <FlameMeter level={flameLevel} />
       </div>
 
