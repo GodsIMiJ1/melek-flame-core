@@ -10,6 +10,7 @@ import { TribunalLog } from "./mic/TribunalLog";
 import { ModelChamber } from "./mic/ModelChamber";
 import { MemoryForge } from "./mic/MemoryForge";
 import { PeaceMode } from "./mic/PeaceMode";
+import { MemoryScrollDashboard } from "./mic/MemoryScrollDashboard";
 
 export const MICDashboard = () => {
   const [activeModule, setActiveModule] = useState("recursive-core");
@@ -61,6 +62,9 @@ export const MICDashboard = () => {
                 <TabsTrigger value="peace-mode" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🕊️ Peace</TabsTrigger>
                 <TabsTrigger value="command" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">⚔️ Command</TabsTrigger>
               </TabsList>
+              <TabsList className="grid grid-cols-1 gap-1 p-2 pt-0 h-auto w-full bg-black/50 border-gold-400/20">
+                <TabsTrigger value="memory-scrolls" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">📜 Memory Scrolls</TabsTrigger>
+              </TabsList>
             </div>
 
             {/* Tab Contents */}
@@ -88,6 +92,9 @@ export const MICDashboard = () => {
               </TabsContent>
               <TabsContent value="command" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
                 <CommandInterface />
+              </TabsContent>
+              <TabsContent value="memory-scrolls" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+                <MemoryScrollDashboard />
               </TabsContent>
             </div>
           </Tabs>

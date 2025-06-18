@@ -315,7 +315,7 @@ export const CommandInterface = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="chat" className="flex-1 flex flex-col min-h-0 m-0">
+        <TabsContent value="chat" className="flex-1 flex flex-col min-h-0 m-0 data-[state=inactive]:hidden">
           <div className="flex-1 flex flex-col min-h-0">
             {/* Agent Selection & Controls */}
       <div className="mb-4 flex gap-2 items-center flex-wrap">
@@ -425,7 +425,7 @@ export const CommandInterface = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="eternal" className="flex-1 flex flex-col min-h-0 m-0 overflow-hidden">
+        <TabsContent value="eternal" className="flex-1 flex flex-col min-h-0 m-0 overflow-hidden data-[state=inactive]:hidden">
           <EternalLoopControls />
         </TabsContent>
       </Tabs>

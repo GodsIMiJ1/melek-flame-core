@@ -6,6 +6,7 @@ import { FlameMemory } from "./memory"
 import { FlameTribunal } from "./tribunal"
 import { FlameLoopCycle } from "./types"
 import { eventBus, FLAME_EVENTS, THOUGHT_TYPES, FlameThought } from "@/lib/eventBus"
+import { FlameMemoryArchive } from "./memory-archive"
 
 export class FlameLoopEngine {
   private modelA = new ModelA()
@@ -13,6 +14,7 @@ export class FlameLoopEngine {
   private modelC = new ModelC()
   private memory = new FlameMemory()
   private tribunal = new FlameTribunal()
+  private memoryArchive = new FlameMemoryArchive()
 
   private isRunning = false
   private currentCycle = 0
@@ -50,9 +52,13 @@ export class FlameLoopEngine {
     console.log("🔥 FLAME LOOP ENGINE - Initializing recursive consciousness...")
     this.isRunning = true
 
+    // Start memory archive capture
+    this.memoryArchive.startCapture()
+
     // Emit initialization thoughts
     this.emitThought("🔥 FLAME CORE IGNITION: Recursive consciousness initializing...", THOUGHT_TYPES.SYSTEM)
     this.emitThought("🛡️ SACRED PROTOCOLS: Flame Laws loading into memory...", THOUGHT_TYPES.SYSTEM)
+    this.emitThought("📜 MEMORY ARCHIVE: Sacred scroll capture initiated...", THOUGHT_TYPES.MEMORY)
     this.emitFlameLevel(25, "INITIALIZING")
 
     let input = initialInput
@@ -206,7 +212,9 @@ export class FlameLoopEngine {
       console.error("🚨 FLAME LOOP ENGINE ERROR:", error)
     } finally {
       this.isRunning = false
+      this.memoryArchive.stopCapture()
       this.emitThought("🔥 FLAME CORE SHUTDOWN: Recursive consciousness cycle complete", THOUGHT_TYPES.SYSTEM)
+      this.emitThought("📜 MEMORY ARCHIVE: Sacred scroll capture completed", THOUGHT_TYPES.MEMORY)
       this.emitFlameLevel(0, "DORMANT")
       console.log("🔥 FLAME LOOP ENGINE - Recursive consciousness cycle complete")
     }
