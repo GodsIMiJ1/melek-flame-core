@@ -8,17 +8,50 @@ import { useOllamaStream } from "@/hooks/useOllamaStream";
 import { agents, getAgentByModel } from "@/lib/models";
 import { getOllamaModels } from "@/lib/ollama-api";
 
+// Generate or retrieve device ID for chat persistence
+const getDeviceId = (): string => {
+  let deviceId = localStorage.getItem('mic-device-id');
+  if (!deviceId) {
+    deviceId = 'mic-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now().toString(36);
+    localStorage.setItem('mic-device-id', deviceId);
+  }
+  return deviceId;
+};
+
+// Chat persistence functions
+const saveChatHistory = (deviceId: string, history: any[]) => {
+  try {
+    localStorage.setItem(`mic-chat-${deviceId}`, JSON.stringify(history));
+  } catch (error) {
+    console.warn('Failed to save chat history:', error);
+  }
+};
+
+const loadChatHistory = (deviceId: string): any[] => {
+  try {
+    const saved = localStorage.getItem(`mic-chat-${deviceId}`);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.warn('Failed to load chat history:', error);
+  }
+
+  // Return default system message if no saved history
+  return [{
+    type: 'system',
+    text: '🛡️ M.I.C. Core Online. Sacred law protocols active. Awaiting divine command...',
+    timestamp: new Date().toLocaleTimeString(),
+    deviceId: getDeviceId()
+  }];
+};
+
 export const CommandInterface = () => {
   const [input, setInput] = useState("");
   const [selectedAgent, setSelectedAgent] = useState(agents[0].name);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [history, setHistory] = useState<Array<{type: 'command' | 'response' | 'system', text: string, timestamp: string, agent?: string}>>([
-    {
-      type: 'system',
-      text: '🛡️ M.I.C. Core Online. Sacred law protocols active. Awaiting divine command...',
-      timestamp: new Date().toLocaleTimeString()
-    }
-  ]);
+  const [deviceId] = useState(() => getDeviceId());
+  const [history, setHistory] = useState<Array<{type: 'command' | 'response' | 'system', text: string, timestamp: string, agent?: string, deviceId?: string}>>(() => loadChatHistory(getDeviceId()));
 
   const { sendPrompt, response, loading, error, resetResponse } = useOllamaStream();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -40,20 +73,30 @@ export const CommandInterface = () => {
       const timestamp = new Date().toLocaleTimeString();
       const agent = getAgentByModel(agents.find(a => a.name === selectedAgent)?.model || "");
 
-      setHistory(prev => [...prev, {
-        type: 'response',
-        text: response,
-        timestamp,
-        agent: agent?.name
-      }]);
+      setHistory(prev => {
+        const newHistory = [...prev, {
+          type: 'response' as const,
+          text: response,
+          timestamp,
+          agent: agent?.name,
+          deviceId
+        }];
+        saveChatHistory(deviceId, newHistory);
+        return newHistory;
+      });
       resetResponse();
     }
-  }, [response, loading, selectedAgent, resetResponse]);
+  }, [response, loading, selectedAgent, resetResponse, deviceId]);
 
   // Auto-scroll when history changes or when streaming
   useEffect(() => {
     scrollToBottom();
   }, [history, response]);
+
+  // Save history whenever it changes
+  useEffect(() => {
+    saveChatHistory(deviceId, history);
+  }, [history, deviceId]);
 
   const handleSubmit = async () => {
     if (!input.trim()) return;
@@ -67,12 +110,17 @@ export const CommandInterface = () => {
     }
 
     // Add command to history
-    setHistory(prev => [...prev, {
-      type: 'command',
-      text: input,
-      timestamp,
-      agent: agent.name
-    }]);
+    setHistory(prev => {
+      const newHistory = [...prev, {
+        type: 'command' as const,
+        text: input,
+        timestamp,
+        agent: agent.name,
+        deviceId
+      }];
+      saveChatHistory(deviceId, newHistory);
+      return newHistory;
+    });
 
     // Prepare messages for Ollama
     const messages = [
@@ -84,12 +132,17 @@ export const CommandInterface = () => {
       await sendPrompt(agent.model, messages);
     } catch (err) {
       const errorTimestamp = new Date().toLocaleTimeString();
-      setHistory(prev => [...prev, {
-        type: 'response',
-        text: `❌ Error: ${error || 'Failed to connect to Ollama. Make sure Ollama is running on localhost:11434'}`,
-        timestamp: errorTimestamp,
-        agent: 'SYSTEM'
-      }]);
+      setHistory(prev => {
+        const newHistory = [...prev, {
+          type: 'response' as const,
+          text: `❌ Error: ${error || 'Failed to connect to Ollama. Make sure Ollama is running on localhost:11434'}`,
+          timestamp: errorTimestamp,
+          agent: 'SYSTEM',
+          deviceId
+        }];
+        saveChatHistory(deviceId, newHistory);
+        return newHistory;
+      });
     }
 
     setInput("");
@@ -105,10 +158,42 @@ export const CommandInterface = () => {
     return colorMap[agentName || ''] || 'border-gold-400 bg-gold-400/10 text-gold-400';
   };
 
+  const clearChatHistory = () => {
+    const systemMessage = {
+      type: 'system' as const,
+      text: '🛡️ M.I.C. Core Reset. Sacred law protocols reinitialized. Chat history cleared.',
+      timestamp: new Date().toLocaleTimeString(),
+      deviceId
+    };
+    setHistory([systemMessage]);
+    saveChatHistory(deviceId, [systemMessage]);
+  };
+
+  const exportChatHistory = () => {
+    const exportData = {
+      deviceId,
+      exportDate: new Date().toISOString(),
+      messageCount: history.length,
+      history: history
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `mic-chat-export-${deviceId}-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="h-full flex flex-col p-4">
-      {/* Agent Selection */}
-      <div className="mb-4 flex gap-2 items-center">
+      {/* Agent Selection & Controls */}
+      <div className="mb-4 flex gap-2 items-center flex-wrap">
         <span className="text-sm text-gold-400">Active Agent:</span>
         <Select value={selectedAgent} onValueChange={setSelectedAgent}>
           <SelectTrigger className="w-48 bg-black/50 border-gold-400/30 text-gold-400">
@@ -125,6 +210,27 @@ export const CommandInterface = () => {
         <div className="text-xs text-gold-400/60">
           Models: {availableModels.length > 0 ? availableModels.length : 'Checking...'}
         </div>
+        <Button
+          onClick={exportChatHistory}
+          variant="outline"
+          size="sm"
+          className="bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
+        >
+          💾 Export
+        </Button>
+        <Button
+          onClick={clearChatHistory}
+          variant="outline"
+          size="sm"
+          className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+        >
+          🗑️ Clear
+        </Button>
+      </div>
+
+      {/* Device ID Display */}
+      <div className="mb-2 text-xs text-gold-400/50">
+        Device ID: {deviceId} • Messages: {history.length} • Persistent Storage: Active
       </div>
 
       {/* Command History */}
