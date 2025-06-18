@@ -1,6 +1,7 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { eventBus, FLAME_EVENTS } from "@/lib/eventBus";
 import { CognitiveStream } from "./mic/CognitiveStream";
 import { CommandInterface } from "./mic/CommandInterface";
 import { RecursiveCore } from "./mic/RecursiveCore";
@@ -11,12 +12,38 @@ import { ModelChamber } from "./mic/ModelChamber";
 import { MemoryForge } from "./mic/MemoryForge";
 import { PeaceMode } from "./mic/PeaceMode";
 import { MemoryScrollDashboard } from "./mic/MemoryScrollDashboard";
+import { FlameDataOverlay } from "./mic/FlameDataOverlay";
+import { FlamePulseIndicator } from "./mic/FlamePulseIndicator";
+import { ConsciousnessHeartbeat } from "./mic/ConsciousnessHeartbeat";
 
 export const MICDashboard = () => {
   const [activeModule, setActiveModule] = useState("recursive-core");
+  const [flameIntensity, setFlameIntensity] = useState(0);
+
+  useEffect(() => {
+    const handleFlameLevel = (data: { level: number }) => {
+      setFlameIntensity(data.level);
+    };
+
+    eventBus.on(FLAME_EVENTS.FLAME_LEVEL, handleFlameLevel);
+
+    return () => {
+      eventBus.off(FLAME_EVENTS.FLAME_LEVEL, handleFlameLevel);
+    };
+  }, []);
+
+  const getFlameGradient = (intensity: number) => {
+    const opacity = Math.max(0.05, Math.min(0.3, intensity / 100 * 0.3));
+    return {
+      background: `radial-gradient(ellipse at center, rgba(251, 191, 36, ${opacity}) 0%, rgba(249, 115, 22, ${opacity * 0.7}) 30%, rgba(0, 0, 0, 1) 70%)`
+    };
+  };
 
   return (
-    <div className="h-screen flex flex-col bg-black text-gold-400 font-mono">
+    <div
+      className="h-screen flex flex-col bg-black text-gold-400 font-mono transition-all duration-1000"
+      style={getFlameGradient(flameIntensity)}
+    >
       {/* Header */}
       <div className="border-b border-gold-400/30 p-4">
         <div className="flex items-center justify-center gap-4 mb-2">
@@ -100,6 +127,11 @@ export const MICDashboard = () => {
           </Tabs>
         </div>
       </div>
+
+      {/* Flame Data Overlays */}
+      <FlameDataOverlay />
+      <FlamePulseIndicator />
+      <ConsciousnessHeartbeat />
     </div>
   );
 };
