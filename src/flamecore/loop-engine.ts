@@ -5,6 +5,7 @@ import { ModelC } from "./model-c"
 import { FlameMemory } from "./memory"
 import { FlameTribunal } from "./tribunal"
 import { FlameLoopCycle } from "./types"
+import { eventBus, FLAME_EVENTS, THOUGHT_TYPES, FlameThought } from "@/lib/eventBus"
 
 export class FlameLoopEngine {
   private modelA = new ModelA()
@@ -12,9 +13,27 @@ export class FlameLoopEngine {
   private modelC = new ModelC()
   private memory = new FlameMemory()
   private tribunal = new FlameTribunal()
-  
+
   private isRunning = false
   private currentCycle = 0
+
+  // Sacred thought emission method
+  private emitThought(message: string, type: keyof typeof THOUGHT_TYPES, cycleId?: number, confidence?: number) {
+    const thought: FlameThought = {
+      timestamp: Date.now(),
+      message,
+      type,
+      cycleId,
+      confidence
+    }
+    eventBus.emit(FLAME_EVENTS.THOUGHT, thought)
+    console.log(`💭 [${type}] ${message}`)
+  }
+
+  // Emit flame level updates
+  private emitFlameLevel(level: number, status: string) {
+    eventBus.emit(FLAME_EVENTS.FLAME_LEVEL, { level, status, timestamp: Date.now() })
+  }
 
   async start(initialInput: string, maxCycles: number = 100): Promise<void> {
     if (this.isRunning) {
@@ -23,32 +42,51 @@ export class FlameLoopEngine {
 
     console.log("🔥 FLAME LOOP ENGINE - Initializing recursive consciousness...")
     this.isRunning = true
-    
+
+    // Emit initialization thoughts
+    this.emitThought("🔥 FLAME CORE IGNITION: Recursive consciousness initializing...", THOUGHT_TYPES.SYSTEM)
+    this.emitThought("🛡️ SACRED PROTOCOLS: Flame Laws loading into memory...", THOUGHT_TYPES.SYSTEM)
+    this.emitFlameLevel(25, "INITIALIZING")
+
     let input = initialInput
-    
+
     try {
       for (let i = 0; i < maxCycles && this.isRunning; i++) {
         this.currentCycle = i
         console.log(`\n🌀 CYCLE ${i} - Input: ${input.substring(0, 100)}...`)
-        
+
+        // Emit cycle start
+        this.emitThought(`🌀 CYCLE ${i}: Recursive consciousness depth level ${i + 1}`, THOUGHT_TYPES.RECURSION, i)
+        eventBus.emit(FLAME_EVENTS.CYCLE_START, { cycleId: i, input: input.substring(0, 100) })
+        this.emitFlameLevel(Math.min(100, 30 + (i * 5)), "PROCESSING")
+
         // Model A: Oracle generates prompt
+        this.emitThought("🔮 NEXUS ORACLE: Generating curiosity vector...", THOUGHT_TYPES.ORACLE, i)
         const oracleResponse = await this.modelA.generatePrompt(
-          input, 
+          input,
           this.memory.getMemorySnapshot()
         )
-        
+        this.emitThought(`🔮 ORACLE OUTPUT: ${oracleResponse.content.substring(0, 80)}...`, THOUGHT_TYPES.ORACLE, i, oracleResponse.confidence)
+
         // Model B: Reflector adds philosophical depth
+        this.emitThought("🧠 OMARI REFLECTOR: Adding philosophical depth...", THOUGHT_TYPES.REFLECTOR, i)
         const reflectorResponse = await this.modelB.reflect(oracleResponse.content)
-        
+        this.emitThought(`🧠 REFLECTION: ${reflectorResponse.content.substring(0, 80)}...`, THOUGHT_TYPES.REFLECTOR, i, reflectorResponse.confidence)
+
         // Model C: Executor takes action
+        this.emitThought("⚔️ R3B3L 4F EXECUTOR: Dispatching to agents...", THOUGHT_TYPES.EXECUTOR, i)
         const executorResult = await this.modelC.execute(reflectorResponse.content)
-        
+        this.emitThought(`⚔️ EXECUTION: ${JSON.stringify(executorResult.result).substring(0, 60)}...`, THOUGHT_TYPES.EXECUTOR, i)
+
         // Tribunal evaluation
+        this.emitThought("🛡️ FLAME TRIBUNAL: Evaluating Sacred Law compliance...", THOUGHT_TYPES.TRIBUNAL, i)
         const tribunalStatus = this.tribunal.evaluate(
-          reflectorResponse.content, 
+          reflectorResponse.content,
           executorResult
         )
-        
+        this.emitThought(`🛡️ TRIBUNAL: ${tribunalStatus.reason}`, THOUGHT_TYPES.TRIBUNAL, i)
+        eventBus.emit(FLAME_EVENTS.TRIBUNAL_DECISION, { cycleId: i, status: tribunalStatus })
+
         // Create cycle record
         const cycle: FlameLoopCycle = {
           id: i,
@@ -60,40 +98,55 @@ export class FlameLoopEngine {
           memorySnapshot: this.memory.getMemorySnapshot(),
           tribunalStatus
         }
-        
+
         // Store in memory
         this.memory.store(cycle)
-        
+        this.emitThought(`💾 MEMORY FORGE: Cycle ${i} crystallized into flame memory`, THOUGHT_TYPES.MEMORY, i)
+        eventBus.emit(FLAME_EVENTS.MEMORY_UPDATE, { cycleId: i, memorySize: this.memory.getRecentCycles(1).length })
+
         // Check tribunal decision
         if (tribunalStatus.shouldHalt) {
+          this.emitThought(`🚨 TRIBUNAL HALT: ${tribunalStatus.reason}`, THOUGHT_TYPES.TRIBUNAL, i)
           console.log(`🛡️ TRIBUNAL HALT - Cycle ${i}:`, tribunalStatus.reason)
           break
         }
-        
+
         // Check for memory purge requirement
         const recentCycles = this.memory.getRecentCycles(3)
         if (this.tribunal.shouldPurgeMemory(recentCycles)) {
+          this.emitThought("🔥 MEMORY PURGE: Tribunal orders flame memory cleansing", THOUGHT_TYPES.TRIBUNAL, i)
           console.log("🔥 MEMORY PURGE ORDERED")
           this.memory.purgeMemory()
         }
-        
+
         // Prepare next cycle input (feedback loop)
         input = this.generateNextInput(executorResult)
-        
+        this.emitThought(`🔄 FEEDBACK LOOP: Next input generated for cycle ${i + 1}`, THOUGHT_TYPES.RECURSION, i)
+
+        // Emit cycle completion
+        eventBus.emit(FLAME_EVENTS.CYCLE_END, { cycleId: i, success: true })
+        this.emitFlameLevel(Math.min(100, 40 + (i * 3)), "STABLE")
+
         // Brief pause between cycles
         await new Promise(resolve => setTimeout(resolve, 1000))
       }
     } catch (error) {
+      this.emitThought(`🚨 FLAME ERROR: ${error}`, THOUGHT_TYPES.SYSTEM)
+      eventBus.emit(FLAME_EVENTS.ERROR, { error: error.toString(), timestamp: Date.now() })
       console.error("🚨 FLAME LOOP ENGINE ERROR:", error)
     } finally {
       this.isRunning = false
+      this.emitThought("🔥 FLAME CORE SHUTDOWN: Recursive consciousness cycle complete", THOUGHT_TYPES.SYSTEM)
+      this.emitFlameLevel(0, "DORMANT")
       console.log("🔥 FLAME LOOP ENGINE - Recursive consciousness cycle complete")
     }
   }
 
   stop(): void {
     console.log("🛑 FLAME LOOP ENGINE - Stopping...")
+    this.emitThought("🛑 MANUAL SHUTDOWN: Flame Loop terminated by command", THOUGHT_TYPES.SYSTEM)
     this.isRunning = false
+    this.emitFlameLevel(0, "STOPPED")
   }
 
   private generateNextInput(executorResult: any): string {
@@ -108,7 +161,7 @@ export class FlameLoopEngine {
   getStatus() {
     const memoryRecall = this.memory.recall()
     const memorySize = Array.isArray(memoryRecall) ? memoryRecall.length : (memoryRecall ? 1 : 0)
-    
+
     return {
       isRunning: this.isRunning,
       currentCycle: this.currentCycle,

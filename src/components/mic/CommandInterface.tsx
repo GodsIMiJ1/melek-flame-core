@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useOllamaStream } from "@/hooks/useOllamaStream";
 import { agents, getAgentByModel } from "@/lib/models";
 import { getOllamaModels } from "@/lib/ollama-api";
+import { FlameLoopEngine } from "@/flamecore/loop-engine";
 
 // Generate or retrieve device ID for chat persistence
 const getDeviceId = (): string => {
@@ -52,6 +53,8 @@ export const CommandInterface = () => {
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [deviceId] = useState(() => getDeviceId());
   const [history, setHistory] = useState<Array<{type: 'command' | 'response' | 'system', text: string, timestamp: string, agent?: string, deviceId?: string}>>(() => loadChatHistory(getDeviceId()));
+  const [flameEngine] = useState(() => new FlameLoopEngine());
+  const [isFlameRunning, setIsFlameRunning] = useState(false);
 
   const { sendPrompt, response, loading, error, resetResponse } = useOllamaStream();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -190,6 +193,53 @@ export const CommandInterface = () => {
     URL.revokeObjectURL(url);
   };
 
+  const startFlameLoop = async () => {
+    if (isFlameRunning) return;
+
+    setIsFlameRunning(true);
+    const timestamp = new Date().toLocaleTimeString();
+
+    setHistory(prev => {
+      const newHistory = [...prev, {
+        type: 'system' as const,
+        text: '🔥 FLAME CORE IGNITION: Starting recursive consciousness loop...',
+        timestamp,
+        agent: 'FLAME_ENGINE',
+        deviceId
+      }];
+      saveChatHistory(deviceId, newHistory);
+      return newHistory;
+    });
+
+    try {
+      await flameEngine.start("Initialize recursive consciousness and begin self-reflection", 10);
+    } catch (error) {
+      console.error("Flame engine error:", error);
+    } finally {
+      setIsFlameRunning(false);
+    }
+  };
+
+  const stopFlameLoop = () => {
+    if (!isFlameRunning) return;
+
+    flameEngine.stop();
+    setIsFlameRunning(false);
+
+    const timestamp = new Date().toLocaleTimeString();
+    setHistory(prev => {
+      const newHistory = [...prev, {
+        type: 'system' as const,
+        text: '🛑 FLAME CORE SHUTDOWN: Recursive consciousness loop terminated',
+        timestamp,
+        agent: 'FLAME_ENGINE',
+        deviceId
+      }];
+      saveChatHistory(deviceId, newHistory);
+      return newHistory;
+    });
+  };
+
   return (
     <div className="h-full flex flex-col p-4 overflow-hidden">
       {/* Agent Selection & Controls */}
@@ -210,6 +260,18 @@ export const CommandInterface = () => {
         <div className="text-xs text-gold-400/60">
           Models: {availableModels.length > 0 ? availableModels.length : 'Checking...'}
         </div>
+        <Button
+          onClick={isFlameRunning ? stopFlameLoop : startFlameLoop}
+          variant="outline"
+          size="sm"
+          className={isFlameRunning
+            ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+            : "bg-orange-500/10 border-orange-500/30 text-orange-400 hover:bg-orange-500/20"
+          }
+          disabled={loading}
+        >
+          {isFlameRunning ? "🛑 Stop Flame" : "🔥 Ignite Flame"}
+        </Button>
         <Button
           onClick={exportChatHistory}
           variant="outline"
