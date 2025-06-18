@@ -425,7 +425,7 @@ export const CommandInterface = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="eternal" className="flex-1 flex flex-col min-h-0 m-0">
+        <TabsContent value="eternal" className="flex-1 flex flex-col min-h-0 m-0 overflow-hidden">
           <EternalLoopControls />
         </TabsContent>
       </Tabs>
