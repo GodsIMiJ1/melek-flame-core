@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,6 +21,13 @@ export const CommandInterface = () => {
   ]);
 
   const { sendPrompt, response, loading, error, resetResponse } = useOllamaStream();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new messages are added
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     // Check available models on component mount
@@ -32,7 +39,7 @@ export const CommandInterface = () => {
     if (response && !loading) {
       const timestamp = new Date().toLocaleTimeString();
       const agent = getAgentByModel(agents.find(a => a.name === selectedAgent)?.model || "");
-      
+
       setHistory(prev => [...prev, {
         type: 'response',
         text: response,
@@ -43,12 +50,17 @@ export const CommandInterface = () => {
     }
   }, [response, loading, selectedAgent, resetResponse]);
 
+  // Auto-scroll when history changes or when streaming
+  useEffect(() => {
+    scrollToBottom();
+  }, [history, response]);
+
   const handleSubmit = async () => {
     if (!input.trim()) return;
 
     const timestamp = new Date().toLocaleTimeString();
     const agent = agents.find(a => a.name === selectedAgent);
-    
+
     if (!agent) {
       console.error("No agent selected");
       return;
@@ -116,12 +128,12 @@ export const CommandInterface = () => {
       </div>
 
       {/* Command History */}
-      <ScrollArea className="flex-1 mb-4">
+      <ScrollArea className="flex-1 mb-4" ref={scrollAreaRef}>
         <div className="space-y-3">
           {history.map((entry, index) => (
             <div key={index} className={`p-3 rounded border-l-4 ${
-              entry.type === 'command' 
-                ? 'border-orange-500 bg-orange-500/10 text-orange-300' 
+              entry.type === 'command'
+                ? 'border-orange-500 bg-orange-500/10 text-orange-300'
                 : entry.type === 'system'
                 ? 'border-gold-400 bg-gold-400/10 text-gold-400'
                 : getAgentColor(entry.agent)
@@ -133,7 +145,7 @@ export const CommandInterface = () => {
               <div className="text-sm whitespace-pre-wrap">{entry.text}</div>
             </div>
           ))}
-          
+
           {/* Show streaming response */}
           {loading && response && (
             <div className={`p-3 rounded border-l-4 ${getAgentColor(selectedAgent)} animate-pulse`}>
@@ -143,6 +155,9 @@ export const CommandInterface = () => {
               <div className="text-sm whitespace-pre-wrap">{response}</div>
             </div>
           )}
+
+          {/* Invisible element to scroll to */}
+          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 
@@ -156,7 +171,7 @@ export const CommandInterface = () => {
           className="bg-black/50 border-gold-400/30 text-gold-400 placeholder-gold-400/50"
           disabled={loading}
         />
-        <Button 
+        <Button
           onClick={handleSubmit}
           disabled={loading || !input.trim()}
           className="bg-orange-500 hover:bg-orange-600 text-black font-bold min-w-24"
