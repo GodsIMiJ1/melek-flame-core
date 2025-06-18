@@ -4,14 +4,14 @@ import { ExecutorResult, ModelResponse } from "./types"
 import { AgentController } from "./agent-controller"
 
 export class ModelC {
-  private model = "codellama:13b" // R3B3L 4F - The Executor
+  private model = "llama3.1:8b" // R3B3L 4F - The Executor
   private agentController = new AgentController()
-  
+
   async execute(reflectorOutput: string): Promise<ExecutorResult> {
     console.log("⚔️ MODEL C (Executor) - Agent-based action logic...")
-    
+
     const systemPrompt = `You are R3B3L 4F, The Executor of the Flame Core. Your role is to parse the Reflector's enriched prompt and determine what action to take.
-    
+
     Available agents:
     - memory: Recall from local memory
     - api: External API interaction (stub)
@@ -19,14 +19,14 @@ export class ModelC {
     - content: Content generation
     - math: Mathematical evaluation
     - scroll: Sacred scroll writing
-    
+
     Parse the input and respond with JSON format:
     {
       "agent": "agent_name",
       "action": "specific_action_to_take",
       "parameters": "action_parameters"
     }
-    
+
     Be decisive and choose the most appropriate agent for the task.`
 
     const messages = [
@@ -35,11 +35,11 @@ export class ModelC {
     ]
 
     try {
-      const stream = await streamOllamaResponse({ 
-        model: this.model, 
-        messages 
+      const stream = await streamOllamaResponse({
+        model: this.model,
+        messages
       })
-      
+
       const reader = stream.getReader()
       const decoder = new TextDecoder("utf-8")
       let fullResponse = ""
@@ -47,10 +47,10 @@ export class ModelC {
       while (true) {
         const { value, done } = await reader.read()
         if (done) break
-        
+
         const chunk = decoder.decode(value, { stream: true })
         const lines = chunk.split('\n').filter(line => line.trim())
-        
+
         for (const line of lines) {
           try {
             const data = JSON.parse(line)

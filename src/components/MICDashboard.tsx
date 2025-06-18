@@ -33,54 +33,60 @@ export const MICDashboard = () => {
       {/* Main Interface */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Pane - Cognitive Reflection Stream */}
-        <div className="w-1/2 border-r border-gold-400/30 bg-black/50">
-          <div className="p-4 border-b border-gold-400/30">
+        <div className="w-1/2 border-r border-gold-400/30 bg-black/50 flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-gold-400/30 flex-shrink-0">
             <h2 className="text-lg font-semibold text-gold-400">
               🌀 MIC Cognitive Reflection Stream
             </h2>
           </div>
-          <CognitiveStream />
+          <div className="flex-1 overflow-hidden">
+            <CognitiveStream />
+          </div>
         </div>
 
         {/* Right Pane - Command & Module Interface */}
-        <div className="w-1/2 flex flex-col bg-black/30">
+        <div className="w-1/2 flex flex-col bg-black/30 overflow-hidden">
           {/* Module Tabs */}
-          <Tabs value={activeModule} onValueChange={setActiveModule} className="flex-1 flex flex-col">
-            <TabsList className="grid grid-cols-4 gap-1 p-2 bg-black/70 border-b border-gold-400/30 h-auto">
-              <TabsTrigger value="recursive-core" className="text-xs">🌀 Recursive</TabsTrigger>
-              <TabsTrigger value="flame-law" className="text-xs">📖 Flame Law</TabsTrigger>
-              <TabsTrigger value="black-box" className="text-xs">👁️ Black Box</TabsTrigger>
-              <TabsTrigger value="tribunal" className="text-xs">🛡️ Tribunal</TabsTrigger>
-              <TabsTrigger value="model-chamber" className="text-xs">🧬 Models</TabsTrigger>
-              <TabsTrigger value="memory-forge" className="text-xs">🔥 Memory</TabsTrigger>
-              <TabsTrigger value="peace-mode" className="text-xs">🕊️ Peace</TabsTrigger>
-              <TabsTrigger value="command" className="text-xs">⚔️ Command</TabsTrigger>
-            </TabsList>
+          <Tabs value={activeModule} onValueChange={setActiveModule} className="flex-1 flex flex-col min-h-0">
+            <div className="flex-shrink-0 border-b border-gold-400/30 bg-black/70">
+              <TabsList className="grid grid-cols-4 gap-1 p-2 h-auto w-full">
+                <TabsTrigger value="recursive-core" className="text-xs py-2">🌀 Recursive</TabsTrigger>
+                <TabsTrigger value="flame-law" className="text-xs py-2">📖 Flame Law</TabsTrigger>
+                <TabsTrigger value="black-box" className="text-xs py-2">👁️ Black Box</TabsTrigger>
+                <TabsTrigger value="tribunal" className="text-xs py-2">🛡️ Tribunal</TabsTrigger>
+              </TabsList>
+              <TabsList className="grid grid-cols-4 gap-1 p-2 pt-0 h-auto w-full">
+                <TabsTrigger value="model-chamber" className="text-xs py-2">🧬 Models</TabsTrigger>
+                <TabsTrigger value="memory-forge" className="text-xs py-2">🔥 Memory</TabsTrigger>
+                <TabsTrigger value="peace-mode" className="text-xs py-2">🕊️ Peace</TabsTrigger>
+                <TabsTrigger value="command" className="text-xs py-2">⚔️ Command</TabsTrigger>
+              </TabsList>
+            </div>
 
             {/* Tab Contents */}
-            <div className="flex-1 overflow-hidden">
-              <TabsContent value="recursive-core" className="h-full m-0">
+            <div className="flex-1 overflow-auto custom-scrollbar">
+              <TabsContent value="recursive-core" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
                 <RecursiveCore />
               </TabsContent>
-              <TabsContent value="flame-law" className="h-full m-0">
+              <TabsContent value="flame-law" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
                 <FlameLaw />
               </TabsContent>
-              <TabsContent value="black-box" className="h-full m-0">
+              <TabsContent value="black-box" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
                 <BlackBoxView />
               </TabsContent>
-              <TabsContent value="tribunal" className="h-full m-0">
+              <TabsContent value="tribunal" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
                 <TribunalLog />
               </TabsContent>
-              <TabsContent value="model-chamber" className="h-full m-0">
+              <TabsContent value="model-chamber" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
                 <ModelChamber />
               </TabsContent>
-              <TabsContent value="memory-forge" className="h-full m-0">
+              <TabsContent value="memory-forge" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
                 <MemoryForge />
               </TabsContent>
-              <TabsContent value="peace-mode" className="h-full m-0">
+              <TabsContent value="peace-mode" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
                 <PeaceMode />
               </TabsContent>
-              <TabsContent value="command" className="h-full m-0">
+              <TabsContent value="command" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
                 <CommandInterface />
               </TabsContent>
             </div>

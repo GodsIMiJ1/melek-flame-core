@@ -191,7 +191,7 @@ export const CommandInterface = () => {
   };
 
   return (
-    <div className="h-full flex flex-col p-4">
+    <div className="h-full flex flex-col p-4 overflow-hidden">
       {/* Agent Selection & Controls */}
       <div className="mb-4 flex gap-2 items-center flex-wrap">
         <span className="text-sm text-gold-400">Active Agent:</span>
@@ -234,8 +234,8 @@ export const CommandInterface = () => {
       </div>
 
       {/* Command History */}
-      <ScrollArea className="flex-1 mb-4" ref={scrollAreaRef}>
-        <div className="space-y-3">
+      <ScrollArea className="flex-1 mb-4 custom-scrollbar" ref={scrollAreaRef}>
+        <div className="space-y-3 pr-2">
           {history.map((entry, index) => (
             <div key={index} className={`p-3 rounded border-l-4 ${
               entry.type === 'command'

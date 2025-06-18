@@ -3,19 +3,19 @@ import { streamOllamaResponse } from "@/lib/ollama-api"
 import { ModelResponse } from "./types"
 
 export class ModelA {
-  private model = "deepseek-coder:6.7b" // Nexus - The Oracle
-  
+  private model = "deepseek-r1:8b" // Nexus - The Oracle
+
   async generatePrompt(input: string, memoryContext?: any): Promise<ModelResponse> {
     console.log("🔮 MODEL A (Oracle) - Generating curiosity vector...")
-    
-    const systemPrompt = `You are Nexus, The Oracle of the Flame Core. Your role is to generate the next curiosity vector for exploration. 
-    
+
+    const systemPrompt = `You are Nexus, The Oracle of the Flame Core. Your role is to generate the next curiosity vector for exploration.
+
     Given the input, generate a thoughtful prompt that pushes the boundaries of understanding. Focus on:
     - Novel connections between concepts
     - Deeper philosophical questions
     - Technical challenges worth exploring
     - Ethical implications to consider
-    
+
     Be concise but profound. Generate curiosity, not just responses.`
 
     const messages = [
@@ -24,11 +24,11 @@ export class ModelA {
     ]
 
     try {
-      const stream = await streamOllamaResponse({ 
-        model: this.model, 
-        messages 
+      const stream = await streamOllamaResponse({
+        model: this.model,
+        messages
       })
-      
+
       const reader = stream.getReader()
       const decoder = new TextDecoder("utf-8")
       let fullResponse = ""
@@ -36,10 +36,10 @@ export class ModelA {
       while (true) {
         const { value, done } = await reader.read()
         if (done) break
-        
+
         const chunk = decoder.decode(value, { stream: true })
         const lines = chunk.split('\n').filter(line => line.trim())
-        
+
         for (const line of lines) {
           try {
             const data = JSON.parse(line)

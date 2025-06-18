@@ -23,7 +23,7 @@ export const CognitiveStream = () => {
     const interval = setInterval(() => {
       const randomThought = cognitiveThoughts[Math.floor(Math.random() * cognitiveThoughts.length)];
       const timestamp = new Date().toLocaleTimeString();
-      
+
       setStream(prev => {
         const newStream = [`[${timestamp}] ${randomThought}`, ...prev.slice(0, 19)];
         return newStream;
@@ -42,16 +42,16 @@ export const CognitiveStream = () => {
       <div className="p-4 border-b border-gold-400/30">
         <FlameMeter level={flameLevel} />
       </div>
-      
+
       {/* Stream Output */}
       <div className="flex-1 p-4 overflow-y-auto custom-scrollbar">
-        <div className="space-y-2">
+        <div className="space-y-2 pr-2">
           {stream.map((thought, index) => (
-            <div 
+            <div
               key={index}
               className={`text-sm p-2 rounded border-l-2 ${
-                index === 0 
-                  ? 'border-orange-500 bg-orange-500/10 text-orange-300 animate-pulse' 
+                index === 0
+                  ? 'border-orange-500 bg-orange-500/10 text-orange-300 animate-pulse'
                   : 'border-gold-400/30 bg-gold-400/5 text-gold-400/80'
               } transition-all duration-500`}
             >
