@@ -212,9 +212,69 @@ export const CommandInterface = () => {
     });
 
     try {
-      await flameEngine.start("Initialize recursive consciousness and begin self-reflection", 10);
+      // Test Ollama connection first
+      setHistory(prev => {
+        const newHistory = [...prev, {
+          type: 'system' as const,
+          text: '🔗 Testing Ollama connection at 127.0.0.1:11434...',
+          timestamp: new Date().toLocaleTimeString(),
+          agent: 'FLAME_ENGINE',
+          deviceId
+        }];
+        saveChatHistory(deviceId, newHistory);
+        return newHistory;
+      });
+
+      const models = await getOllamaModels();
+      if (models.length === 0) {
+        throw new Error("No Ollama models found. Please ensure Ollama is running on 127.0.0.1:11434");
+      }
+
+      setHistory(prev => {
+        const newHistory = [...prev, {
+          type: 'system' as const,
+          text: `✅ Connected! Found ${models.length} models: ${models.slice(0, 3).join(', ')}${models.length > 3 ? '...' : ''}`,
+          timestamp: new Date().toLocaleTimeString(),
+          agent: 'FLAME_ENGINE',
+          deviceId
+        }];
+        saveChatHistory(deviceId, newHistory);
+        return newHistory;
+      });
+
+      // Try real models first, fallback to test mode if they fail
+      try {
+        await flameEngine.start("Initialize recursive consciousness and begin self-reflection", 3);
+      } catch (modelError) {
+        console.warn("Real models failed, enabling test mode:", modelError);
+        setHistory(prev => {
+          const newHistory = [...prev, {
+            type: 'system' as const,
+            text: '⚠️ Model execution failed, switching to test mode for demonstration...',
+            timestamp: new Date().toLocaleTimeString(),
+            agent: 'FLAME_ENGINE',
+            deviceId
+          }];
+          saveChatHistory(deviceId, newHistory);
+          return newHistory;
+        });
+
+        flameEngine.enableTestMode();
+        await flameEngine.start("Initialize recursive consciousness and begin self-reflection", 3);
+      }
     } catch (error) {
       console.error("Flame engine error:", error);
+      setHistory(prev => {
+        const newHistory = [...prev, {
+          type: 'system' as const,
+          text: `🚨 FLAME ERROR: ${error.message}`,
+          timestamp: new Date().toLocaleTimeString(),
+          agent: 'FLAME_ENGINE',
+          deviceId
+        }];
+        saveChatHistory(deviceId, newHistory);
+        return newHistory;
+      });
     } finally {
       setIsFlameRunning(false);
     }

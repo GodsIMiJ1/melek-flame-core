@@ -3,7 +3,7 @@ import { streamOllamaResponse } from "@/lib/ollama-api"
 import { ModelResponse } from "./types"
 
 export class ModelA {
-  private model = "deepseek-r1:8b" // Nexus - The Oracle
+  private model = "deepseek-r1:8b" // Nexus - The Oracle (from your available models)
 
   async generatePrompt(input: string, memoryContext?: any): Promise<ModelResponse> {
     console.log("🔮 MODEL A (Oracle) - Generating curiosity vector...")

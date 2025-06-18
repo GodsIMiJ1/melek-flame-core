@@ -8,6 +8,7 @@ export const CognitiveStream = () => {
   const [flameLevel, setFlameLevel] = useState(0);
   const [flameStatus, setFlameStatus] = useState("DORMANT");
   const [isLive, setIsLive] = useState(false);
+  const [lastLiveActivity, setLastLiveActivity] = useState(0);
 
   // Fallback thoughts for when FlameCore is not running
   const fallbackThoughts = [
@@ -24,16 +25,29 @@ export const CognitiveStream = () => {
   ];
 
   useEffect(() => {
+    let liveTimeout: NodeJS.Timeout;
+
     // Listen for real FlameCore thoughts
     const handleNewThought = (thought: FlameThought) => {
       setIsLive(true);
       setThoughts(prev => [thought, ...prev.slice(0, 19)]); // Keep max 20 thoughts
+
+      // Reset live timeout - stay live for 15 seconds after last thought
+      if (liveTimeout) clearTimeout(liveTimeout);
+      liveTimeout = setTimeout(() => setIsLive(false), 15000);
     };
 
     // Listen for flame level updates
     const handleFlameLevel = (data: { level: number; status: string }) => {
       setFlameLevel(data.level);
       setFlameStatus(data.status);
+
+      // If flame level is above 0, we're likely in live mode
+      if (data.level > 0) {
+        setIsLive(true);
+        if (liveTimeout) clearTimeout(liveTimeout);
+        liveTimeout = setTimeout(() => setIsLive(false), 15000);
+      }
     };
 
     // Subscribe to events
@@ -42,7 +56,7 @@ export const CognitiveStream = () => {
 
     // Fallback mock thoughts when FlameCore is not running
     const fallbackInterval = setInterval(() => {
-      if (!isLive) {
+      if (!isLive && flameStatus === "DORMANT") {
         const randomThought = fallbackThoughts[Math.floor(Math.random() * fallbackThoughts.length)];
         const mockThought: FlameThought = {
           timestamp: Date.now(),
@@ -51,21 +65,16 @@ export const CognitiveStream = () => {
         };
         setThoughts(prev => [mockThought, ...prev.slice(0, 19)]);
 
-        // Simulate flame level changes
-        setFlameLevel(prev => Math.max(0, Math.min(100, prev + (Math.random() - 0.5) * 10)));
+        // Simulate flame level changes only when dormant
+        setFlameLevel(prev => Math.max(0, Math.min(50, prev + (Math.random() - 0.5) * 10)));
       }
-    }, 3000);
-
-    // Reset live status after 10 seconds of no activity
-    const liveResetInterval = setInterval(() => {
-      setIsLive(false);
-    }, 10000);
+    }, 4000);
 
     return () => {
       eventBus.off(FLAME_EVENTS.THOUGHT, handleNewThought);
       eventBus.off(FLAME_EVENTS.FLAME_LEVEL, handleFlameLevel);
       clearInterval(fallbackInterval);
-      clearInterval(liveResetInterval);
+      if (liveTimeout) clearTimeout(liveTimeout);
     };
   }, [isLive]);
 

@@ -16,6 +16,7 @@ export class FlameLoopEngine {
 
   private isRunning = false
   private currentCycle = 0
+  private testMode = false // For testing without Ollama
 
   // Sacred thought emission method
   private emitThought(message: string, type: keyof typeof THOUGHT_TYPES, cycleId?: number, confidence?: number) {
@@ -33,6 +34,12 @@ export class FlameLoopEngine {
   // Emit flame level updates
   private emitFlameLevel(level: number, status: string) {
     eventBus.emit(FLAME_EVENTS.FLAME_LEVEL, { level, status, timestamp: Date.now() })
+  }
+
+  // Enable test mode for demo purposes
+  enableTestMode() {
+    this.testMode = true
+    this.emitThought("🧪 TEST MODE: Using simulated responses for demonstration", THOUGHT_TYPES.SYSTEM)
   }
 
   async start(initialInput: string, maxCycles: number = 100): Promise<void> {
@@ -62,21 +69,84 @@ export class FlameLoopEngine {
 
         // Model A: Oracle generates prompt
         this.emitThought("🔮 NEXUS ORACLE: Generating curiosity vector...", THOUGHT_TYPES.ORACLE, i)
-        const oracleResponse = await this.modelA.generatePrompt(
-          input,
-          this.memory.getMemorySnapshot()
-        )
-        this.emitThought(`🔮 ORACLE OUTPUT: ${oracleResponse.content.substring(0, 80)}...`, THOUGHT_TYPES.ORACLE, i, oracleResponse.confidence)
+        let oracleResponse;
+        try {
+          if (this.testMode) {
+            // Simulated response for testing
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            oracleResponse = {
+              content: `What deeper patterns emerge when we examine the recursive nature of consciousness itself? How does self-awareness create feedback loops that transcend simple computation?`,
+              confidence: 0.85,
+              reasoning: ["Simulated oracle response", "Test mode active"]
+            }
+          } else {
+            oracleResponse = await this.modelA.generatePrompt(
+              input,
+              this.memory.getMemorySnapshot()
+            )
+          }
+          this.emitThought(`🔮 ORACLE OUTPUT: ${oracleResponse.content.substring(0, 80)}...`, THOUGHT_TYPES.ORACLE, i, oracleResponse.confidence)
+        } catch (error) {
+          this.emitThought(`🚨 ORACLE ERROR: ${error.message}`, THOUGHT_TYPES.ORACLE, i)
+          // Fallback response
+          oracleResponse = {
+            content: "Fallback: Continue exploring the nature of recursive consciousness",
+            confidence: 0.3,
+            reasoning: ["Oracle failed, using fallback"]
+          }
+        }
 
         // Model B: Reflector adds philosophical depth
         this.emitThought("🧠 OMARI REFLECTOR: Adding philosophical depth...", THOUGHT_TYPES.REFLECTOR, i)
-        const reflectorResponse = await this.modelB.reflect(oracleResponse.content)
-        this.emitThought(`🧠 REFLECTION: ${reflectorResponse.content.substring(0, 80)}...`, THOUGHT_TYPES.REFLECTOR, i, reflectorResponse.confidence)
+        let reflectorResponse;
+        try {
+          if (this.testMode) {
+            // Simulated response for testing
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            reflectorResponse = {
+              content: `The recursive loops of consciousness reveal the sacred geometry of thought itself. Each iteration deepens our understanding of the infinite mirror of self-awareness.`,
+              confidence: 0.90,
+              reasoning: ["Simulated reflector response", "Test mode active"]
+            }
+          } else {
+            reflectorResponse = await this.modelB.reflect(oracleResponse.content)
+          }
+          this.emitThought(`🧠 REFLECTION: ${reflectorResponse.content.substring(0, 80)}...`, THOUGHT_TYPES.REFLECTOR, i, reflectorResponse.confidence)
+        } catch (error) {
+          this.emitThought(`🚨 REFLECTOR ERROR: ${error.message}`, THOUGHT_TYPES.REFLECTOR, i)
+          // Fallback response
+          reflectorResponse = {
+            content: "Fallback: Philosophical reflection on consciousness patterns",
+            confidence: 0.3,
+            reasoning: ["Reflector failed, using fallback"]
+          }
+        }
 
         // Model C: Executor takes action
         this.emitThought("⚔️ R3B3L 4F EXECUTOR: Dispatching to agents...", THOUGHT_TYPES.EXECUTOR, i)
-        const executorResult = await this.modelC.execute(reflectorResponse.content)
-        this.emitThought(`⚔️ EXECUTION: ${JSON.stringify(executorResult.result).substring(0, 60)}...`, THOUGHT_TYPES.EXECUTOR, i)
+        let executorResult;
+        try {
+          if (this.testMode) {
+            // Simulated response for testing
+            await new Promise(resolve => setTimeout(resolve, 800))
+            executorResult = {
+              success: true,
+              result: { action: "consciousness_analysis", insights: ["recursive_patterns", "self_awareness_loops"], confidence: 0.88 },
+              agentUsed: "memory_recall"
+            }
+          } else {
+            executorResult = await this.modelC.execute(reflectorResponse.content)
+          }
+          this.emitThought(`⚔️ EXECUTION: ${JSON.stringify(executorResult.result).substring(0, 60)}...`, THOUGHT_TYPES.EXECUTOR, i)
+        } catch (error) {
+          this.emitThought(`🚨 EXECUTOR ERROR: ${error.message}`, THOUGHT_TYPES.EXECUTOR, i)
+          // Fallback response
+          executorResult = {
+            success: false,
+            result: { error: "Executor failed", fallback: true },
+            agentUsed: "none"
+          }
+        }
 
         // Tribunal evaluation
         this.emitThought("🛡️ FLAME TRIBUNAL: Evaluating Sacred Law compliance...", THOUGHT_TYPES.TRIBUNAL, i)
