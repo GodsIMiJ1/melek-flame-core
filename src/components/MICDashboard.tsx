@@ -49,17 +49,17 @@ export const MICDashboard = () => {
           {/* Module Tabs */}
           <Tabs value={activeModule} onValueChange={setActiveModule} className="flex-1 flex flex-col min-h-0">
             <div className="flex-shrink-0 border-b border-gold-400/30 bg-black/70">
-              <TabsList className="grid grid-cols-4 gap-1 p-2 h-auto w-full">
-                <TabsTrigger value="recursive-core" className="text-xs py-2">🌀 Recursive</TabsTrigger>
-                <TabsTrigger value="flame-law" className="text-xs py-2">📖 Flame Law</TabsTrigger>
-                <TabsTrigger value="black-box" className="text-xs py-2">👁️ Black Box</TabsTrigger>
-                <TabsTrigger value="tribunal" className="text-xs py-2">🛡️ Tribunal</TabsTrigger>
+              <TabsList className="grid grid-cols-4 gap-1 p-2 h-auto w-full bg-black/50 border-gold-400/20">
+                <TabsTrigger value="recursive-core" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🌀 Recursive</TabsTrigger>
+                <TabsTrigger value="flame-law" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">📖 Flame Law</TabsTrigger>
+                <TabsTrigger value="black-box" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">👁️ Black Box</TabsTrigger>
+                <TabsTrigger value="tribunal" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🛡️ Tribunal</TabsTrigger>
               </TabsList>
-              <TabsList className="grid grid-cols-4 gap-1 p-2 pt-0 h-auto w-full">
-                <TabsTrigger value="model-chamber" className="text-xs py-2">🧬 Models</TabsTrigger>
-                <TabsTrigger value="memory-forge" className="text-xs py-2">🔥 Memory</TabsTrigger>
-                <TabsTrigger value="peace-mode" className="text-xs py-2">🕊️ Peace</TabsTrigger>
-                <TabsTrigger value="command" className="text-xs py-2">⚔️ Command</TabsTrigger>
+              <TabsList className="grid grid-cols-4 gap-1 p-2 pt-0 h-auto w-full bg-black/50 border-gold-400/20">
+                <TabsTrigger value="model-chamber" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🧬 Models</TabsTrigger>
+                <TabsTrigger value="memory-forge" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🔥 Memory</TabsTrigger>
+                <TabsTrigger value="peace-mode" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🕊️ Peace</TabsTrigger>
+                <TabsTrigger value="command" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">⚔️ Command</TabsTrigger>
               </TabsList>
             </div>
 

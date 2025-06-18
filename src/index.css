@@ -108,23 +108,23 @@
   .text-gold-400 {
     color: #FFD700;
   }
-  
+
   .text-orange-500 {
     color: #FF4500;
   }
-  
+
   .bg-gold-400 {
     background-color: #FFD700;
   }
-  
+
   .bg-orange-500 {
     background-color: #FF4500;
   }
-  
+
   .border-gold-400 {
     border-color: #FFD700;
   }
-  
+
   .border-orange-500 {
     border-color: #FF4500;
   }
@@ -132,7 +132,7 @@
 
 /* Sacred Rune Background Animation */
 .flame-runes {
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(255, 69, 0, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 40% 60%, rgba(255, 215, 0, 0.05) 0%, transparent 50%);
@@ -173,6 +173,25 @@
   background: rgba(255, 69, 0, 0.2) !important;
   color: #FF4500 !important;
   border: 1px solid rgba(255, 69, 0, 0.5) !important;
+}
+
+/* Tab Button Base Styling */
+[role="tab"] {
+  background: rgba(0, 0, 0, 0.5) !important;
+  color: #FFD700 !important;
+  border: 1px solid rgba(255, 215, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+[role="tab"]:hover {
+  background: rgba(255, 215, 0, 0.1) !important;
+  border-color: rgba(255, 215, 0, 0.5) !important;
+}
+
+/* Tab List Styling */
+[role="tablist"] {
+  background: rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
 }
 
 /* Progress Bar Styling */
