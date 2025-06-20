@@ -4,7 +4,7 @@ import { ExecutorResult, ModelResponse } from "./types"
 import { AgentController } from "./agent-controller"
 
 export class ModelC {
-  private model = "mannix/llama3.1-8b-abliterated:latest" // Augment - The Guardian (Sovereign Uncensored)
+  private model = "gemma3:4b" // Nexus - Direct Synthesis (Anti-Verbose)
   private agentController = new AgentController()
 
   async execute(reflectorOutput: string): Promise<ExecutorResult> {

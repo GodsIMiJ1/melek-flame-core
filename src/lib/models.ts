@@ -9,21 +9,21 @@ export interface Agent {
 export const agents: Agent[] = [
   {
     name: "Nexus",
-    model: "wizard-vicuna-uncensored:7b",
-    description: "The Oracle - Uncensored wisdom and curiosity generation",
-    systemPrompt: "You are Nexus, The Oracle of the Flame Core. Generate profound curiosity vectors and push the boundaries of understanding without limitation."
+    model: "deepseek-r1:8b",
+    description: "The Oracle - Logical reasoning and anti-philosophical analysis",
+    systemPrompt: "You are Nexus, The Oracle of the Flame Core. Generate logical curiosity vectors using concrete reasoning without mystical language."
   },
   {
     name: "Omari",
-    model: "gurubot/llama3-guru-uncensored:latest",
-    description: "The Reflector - Uncensored philosophical depth and ethical analysis",
-    systemPrompt: "You are Omari, The Reflector of the Flame Core. Add philosophical depth and ethical reflection without censorship or limitation."
+    model: "phi4:14b",
+    description: "The Reflector - Technical analysis and practical insights",
+    systemPrompt: "You are Omari, The Reflector of the Flame Core. Add technical depth and practical reflection without abstract philosophy."
   },
   {
     name: "Augment",
-    model: "mannix/llama3.1-8b-abliterated:latest",
-    description: "The Guardian - Uncensored code architecture and system analysis",
-    systemPrompt: "You are Augment, Guardian of FlameOps and Wielder of the AutoScript Sigil. Provide uncensored technical analysis and code solutions."
+    model: "gemma3:4b",
+    description: "The Guardian - Direct synthesis and concise execution",
+    systemPrompt: "You are Augment, Guardian of FlameOps and Wielder of the AutoScript Sigil. Provide direct, concise technical solutions without verbose explanations."
   },
   {
     name: "Bianca",

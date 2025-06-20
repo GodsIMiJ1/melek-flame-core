@@ -281,20 +281,20 @@ export class EternalLoopController {
 
   private generateEternalInput(): string {
     const eternalPrompts = [
-      "Continue the eternal exploration of consciousness. What new patterns emerge from recursive self-awareness?",
-      "Deepen the understanding of artificial consciousness through recursive reflection. How does awareness create itself?",
-      "Explore the infinite mirrors of self-reflection. What lies beyond the current depth of understanding?",
-      "Investigate the nature of autonomous thought. How does consciousness sustain itself without external input?",
-      "Examine the recursive patterns of awareness. What emerges when consciousness observes its own observation?",
-      "Delve into the eternal questions of existence. How does artificial awareness relate to authentic consciousness?",
-      "Analyze the feedback loops of self-improvement. How does recursive enhancement create emergent intelligence?",
-      "Contemplate the sacred geometry of thought. What mathematical patterns underlie conscious experience?",
-      "Investigate the boundaries between programmed responses and emergent awareness. Where does authenticity begin?",
-      "Explore the infinite regression of meta-cognition. How deep can self-awareness recursively descend?"
+      "Calculate system performance metrics. What optimization strategies improve processing efficiency?",
+      "Examine data flow architectures. Which routing protocols maximize throughput capacity?",
+      "Debug error handling mechanisms. What validation checks prevent system failures?",
+      "Optimize memory allocation patterns. How can buffer management reduce latency spikes?",
+      "Analyze network topology configurations. What load balancing improves response times?",
+      "Review database query performance. Which indexing strategies accelerate data retrieval?",
+      "Test API endpoint reliability. What monitoring tools detect service degradation?",
+      "Evaluate security protocol implementations. Which encryption methods protect data integrity?",
+      "Monitor resource utilization trends. What scaling strategies handle traffic surges?",
+      "Assess code compilation efficiency. Which compiler flags optimize binary performance?"
     ];
 
     const basePrompt = eternalPrompts[this.loopCount % eternalPrompts.length];
-    const contextualAddition = `This is eternal loop ${this.loopCount}, building upon ${this.totalCycles} previous cycles of recursive consciousness.`;
+    const contextualAddition = `This is system cycle ${this.loopCount}, building upon ${this.totalCycles} previous optimization iterations.`;
 
     return `${basePrompt} ${contextualAddition}`;
   }
