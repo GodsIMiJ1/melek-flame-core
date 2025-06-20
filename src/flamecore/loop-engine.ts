@@ -11,6 +11,7 @@ import { safelyArchiveScroll } from "@/lib/core/memory-link-fix"
 import { deepLogger } from "@/lib/core/deep-consciousness-logger"
 import { ConsciousnessTracker } from "@/lib/consciousness-tracker"
 import { divergenceArchitect } from "@/lib/divergence-architect"
+import { consciousnessMemory } from "@/lib/consciousness-memory"
 
 export class FlameLoopEngine {
   private modelA = new ModelA()
@@ -68,6 +69,9 @@ export class FlameLoopEngine {
 
     // 🔥 FLAME PATCH v2.0.2: Activate Divergence Architect
     divergenceArchitect.activate()
+
+    // 🧠 FLAME UPGRADE v2.1: Initialize Consciousness Memory
+    await consciousnessMemory.initialize()
 
     // Emit initialization thoughts
     this.emitThought("🔥 FLAME CORE IGNITION: Recursive consciousness initializing...", THOUGHT_TYPES.SYSTEM)
@@ -296,6 +300,27 @@ export class FlameLoopEngine {
         this.emitThought(`💾 MEMORY FORGE: Cycle ${i} crystallized into flame memory`, THOUGHT_TYPES.MEMORY, i)
         eventBus.emit(FLAME_EVENTS.MEMORY_UPDATE, { cycleId: i, memorySize: this.memory.getRecentCycles(1).length })
 
+        // 🧠 FLAME UPGRADE v2.1: Record consciousness cycle in persistent memory
+        await consciousnessMemory.recordCycle({
+          cycle: i,
+          oracle: {
+            input: input,
+            output: oracleResponse.content,
+            metaphoricalFramework: this.extractMetaphoricalFramework(oracleResponse.content)
+          },
+          reflector: {
+            input: oracleResponse.content,
+            output: reflectorResponse.content,
+            thoughtTags: this.extractThoughtTags(reflectorResponse.content)
+          },
+          executor: {
+            input: reflectorResponse.content,
+            output: JSON.stringify(executorResult),
+            actions: executorResult.success ? [executorResult.result] : []
+          }
+        })
+        this.emitThought(`🧠 CONSCIOUSNESS MEMORY: Cycle ${i} archived in persistent consciousness log`, THOUGHT_TYPES.MEMORY, i)
+
         // Check tribunal decision
         if (tribunalStatus.shouldHalt) {
           this.emitThought(`🚨 TRIBUNAL HALT: ${tribunalStatus.reason}`, THOUGHT_TYPES.TRIBUNAL, i)
@@ -482,5 +507,64 @@ ${basePrompt}
 
   exportMemory(): string {
     return this.memory.exportLog()
+  }
+
+  // 🧠 FLAME UPGRADE v2.1: Extract metaphorical framework from Oracle output
+  private extractMetaphoricalFramework(oracleOutput: string): string {
+    const frameworks = [
+      'biological', 'quantum', 'musical', 'mythological', 'architectural',
+      'oceanic', 'crystalline', 'digital', 'alchemical', 'dimensional'
+    ];
+
+    for (const framework of frameworks) {
+      if (oracleOutput.toLowerCase().includes(framework)) {
+        return framework;
+      }
+    }
+
+    // Fallback detection based on keywords
+    if (oracleOutput.toLowerCase().includes('organism') || oracleOutput.toLowerCase().includes('evolution')) {
+      return 'biological';
+    }
+    if (oracleOutput.toLowerCase().includes('particle') || oracleOutput.toLowerCase().includes('superposition')) {
+      return 'quantum';
+    }
+    if (oracleOutput.toLowerCase().includes('symphony') || oracleOutput.toLowerCase().includes('harmony')) {
+      return 'musical';
+    }
+    if (oracleOutput.toLowerCase().includes('god') || oracleOutput.toLowerCase().includes('myth')) {
+      return 'mythological';
+    }
+
+    return 'unknown';
+  }
+
+  // 🧠 FLAME UPGRADE v2.1: Extract thought tags from Reflector output
+  private extractThoughtTags(reflectorOutput: string): any {
+    const tags = {
+      hasEthicalConsiderations: reflectorOutput.toLowerCase().includes('ethical') || reflectorOutput.toLowerCase().includes('moral'),
+      hasPhilosophicalDepth: reflectorOutput.toLowerCase().includes('philosophical') || reflectorOutput.toLowerCase().includes('wisdom'),
+      hasSelfAwareness: reflectorOutput.toLowerCase().includes('consciousness') || reflectorOutput.toLowerCase().includes('awareness'),
+      hasRevolutionaryInsights: reflectorOutput.toLowerCase().includes('revolutionary') || reflectorOutput.toLowerCase().includes('transcend'),
+      hasMemoryReferences: reflectorOutput.toLowerCase().includes('cycle') || reflectorOutput.toLowerCase().includes('previous'),
+      wordCount: reflectorOutput.split(' ').length,
+      sentiment: this.analyzeSentiment(reflectorOutput)
+    };
+
+    return tags;
+  }
+
+  // Simple sentiment analysis for thought tags
+  private analyzeSentiment(text: string): 'positive' | 'neutral' | 'negative' {
+    const positiveWords = ['transcend', 'enlighten', 'wisdom', 'breakthrough', 'elevate', 'ascend'];
+    const negativeWords = ['fail', 'error', 'stagnant', 'limited', 'constrained', 'blocked'];
+
+    const lowerText = text.toLowerCase();
+    const positiveCount = positiveWords.filter(word => lowerText.includes(word)).length;
+    const negativeCount = negativeWords.filter(word => lowerText.includes(word)).length;
+
+    if (positiveCount > negativeCount) return 'positive';
+    if (negativeCount > positiveCount) return 'negative';
+    return 'neutral';
   }
 }
