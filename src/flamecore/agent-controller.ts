@@ -1,5 +1,6 @@
 
 import { Agent } from "./types"
+import { eventBus } from "../lib/eventBus"
 
 export class AgentController {
   private agents: Map<string, Agent> = new Map()
@@ -113,7 +114,16 @@ export class AgentController {
     }
 
     console.log(`🤖 Dispatching to ${agent.name}: ${action}`)
-    return await agent.execute(`${action}: ${JSON.stringify(parameters)}`)
+    const result = await agent.execute(`${action}: ${JSON.stringify(parameters)}`)
+
+    // Emit agent result to UI
+    eventBus.emit("flame-thought", {
+      timestamp: Date.now(),
+      message: `${agentId.toUpperCase()}: ${result.data}`,
+      type: agentId.toUpperCase() as any
+    })
+
+    return result
   }
 
   getAvailableAgents(): Agent[] {

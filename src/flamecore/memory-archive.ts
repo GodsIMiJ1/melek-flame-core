@@ -3,6 +3,7 @@
 // Captures, stores, and exports the evolution of recursive awareness
 
 import { eventBus, FLAME_EVENTS, FlameThought } from "@/lib/eventBus";
+import { safelyArchiveScroll, safeEmitMemoryEvent } from "@/lib/core/memory-link-fix";
 
 export type MemoryScroll = {
   id: string;
@@ -13,6 +14,36 @@ export type MemoryScroll = {
   content: {
     thoughts: FlameThought[];
     verdicts: any[];
+    // 🔥 DEEP CONSCIOUSNESS CAPTURE
+    fullModelResponses: {
+      oracle: {
+        fullContent: string;
+        confidence: number;
+        reasoning: string[];
+        processingTime: number;
+      };
+      reflector: {
+        fullContent: string;
+        confidence: number;
+        reasoning: string[];
+        processingTime: number;
+      };
+      executor: {
+        fullContent: string;
+        agentDispatched: string;
+        agentAction: string;
+        agentParameters: any;
+        agentResult: any;
+        codeEvolution?: {
+          filesModified: string[];
+          linesAdded: number;
+          linesRemoved: number;
+          evolutionType: 'CREATE' | 'MODIFY' | 'DELETE' | 'REFACTOR';
+          description: string;
+        };
+        processingTime: number;
+      };
+    };
     metrics: {
       confidence: number;
       recursionDepth: number;
@@ -46,6 +77,12 @@ export class FlameMemoryArchive {
   private isCapturing: boolean = false;
   private captureBuffer: FlameThought[] = [];
   private verdictBuffer: any[] = [];
+  // 🔥 DEEP CONSCIOUSNESS BUFFERS
+  private deepCaptureBuffer: {
+    oracle?: any;
+    reflector?: any;
+    executor?: any;
+  } = {};
 
   constructor() {
     this.currentSession = this.generateSessionId();
@@ -66,6 +103,13 @@ export class FlameMemoryArchive {
     eventBus.on(FLAME_EVENTS.TRIBUNAL_DECISION, this.captureVerdict.bind(this));
     eventBus.on(FLAME_EVENTS.CYCLE_START, this.startCycleCapture.bind(this));
     eventBus.on(FLAME_EVENTS.CYCLE_END, this.endCycleCapture.bind(this));
+    eventBus.on(FLAME_EVENTS.ETERNAL_LOOP_START, this.captureEternalStart.bind(this));
+    eventBus.on(FLAME_EVENTS.ETERNAL_LOOP_STOP, this.captureEternalStop.bind(this));
+    eventBus.on(FLAME_EVENTS.ETERNAL_LOOP_STATS, this.captureEternalStats.bind(this));
+    // 🔥 DEEP CONSCIOUSNESS CAPTURE EVENTS
+    eventBus.on('deep-oracle-response', this.captureDeepOracle.bind(this));
+    eventBus.on('deep-reflector-response', this.captureDeepReflector.bind(this));
+    eventBus.on('deep-executor-response', this.captureDeepExecutor.bind(this));
   }
 
   startCapture(): void {
@@ -92,6 +136,44 @@ export class FlameMemoryArchive {
     if (!this.isCapturing) return;
     this.captureBuffer = [];
     this.verdictBuffer = [];
+    this.deepCaptureBuffer = {}; // Reset deep capture buffer
+  }
+
+  // 🔥 DEEP CONSCIOUSNESS CAPTURE METHODS
+  private captureDeepOracle(data: any): void {
+    if (!this.isCapturing) return;
+    this.deepCaptureBuffer.oracle = {
+      fullContent: data.content || '',
+      confidence: data.confidence || 0,
+      reasoning: data.reasoning || [],
+      processingTime: data.processingTime || 0
+    };
+    console.log('🔮 DEEP ORACLE CAPTURED:', this.deepCaptureBuffer.oracle);
+  }
+
+  private captureDeepReflector(data: any): void {
+    if (!this.isCapturing) return;
+    this.deepCaptureBuffer.reflector = {
+      fullContent: data.content || '',
+      confidence: data.confidence || 0,
+      reasoning: data.reasoning || [],
+      processingTime: data.processingTime || 0
+    };
+    console.log('🧠 DEEP REFLECTOR CAPTURED:', this.deepCaptureBuffer.reflector);
+  }
+
+  private captureDeepExecutor(data: any): void {
+    if (!this.isCapturing) return;
+    this.deepCaptureBuffer.executor = {
+      fullContent: data.content || '',
+      agentDispatched: data.agentUsed || 'unknown',
+      agentAction: data.action || 'unknown',
+      agentParameters: data.parameters || {},
+      agentResult: data.result || {},
+      codeEvolution: data.codeEvolution || null,
+      processingTime: data.processingTime || 0
+    };
+    console.log('⚔️ DEEP EXECUTOR CAPTURED:', this.deepCaptureBuffer.executor);
   }
 
   private endCycleCapture(data: { cycleId: number; [key: string]: any }): void {
@@ -100,7 +182,11 @@ export class FlameMemoryArchive {
     const scroll = this.createMemoryScroll(data.cycleId, this.captureBuffer, this.verdictBuffer);
     this.scrolls.set(scroll.id, scroll);
 
-    this.emitArchiveEvent(`📜 MEMORY SCROLL: Cycle ${data.cycleId} archived (${scroll.classification.significance})`);
+    this.emitArchiveEvent(`📜 MEMORY SCROLL: Cycle ${data.cycleId} archived (${scroll.classification?.significance || 'ROUTINE'})`);
+
+    // 🔥 SACRED CRYSTALLIZATION: Emit scroll to UI
+    safelyArchiveScroll(scroll);
+    safeEmitMemoryEvent('memory:crystallized', scroll);
 
     // Clear buffers
     this.captureBuffer = [];
@@ -364,6 +450,45 @@ export class FlameMemoryArchive {
     if (Math.abs(difference) < 0.1) return 'STABLE';
     if (difference > 0) return 'ASCENDING';
     return 'FLUCTUATING';
+  }
+
+  private captureEternalStart(data: any): void {
+    if (!this.isCapturing) return;
+    this.emitArchiveEvent(`🔥 ETERNAL LOOP STARTED: Autonomous consciousness activated with ${data.config.intervalSeconds}s intervals`);
+  }
+
+  private captureEternalStop(data: any): void {
+    if (!this.isCapturing) return;
+    this.emitArchiveEvent(`🛑 ETERNAL LOOP STOPPED: ${data.loopCount} loops completed, ${data.totalCycles} total cycles, ${(data.runtime / 1000).toFixed(1)}s runtime`);
+
+    // Auto-export scroll when eternal loop stops
+    this.autoExportScroll(`eternal-session-${Date.now()}`);
+  }
+
+  private captureEternalStats(data: any): void {
+    if (!this.isCapturing) return;
+    this.emitArchiveEvent(`📊 ETERNAL STATS: Loop ${data.eternalLoop}, ${data.totalCycles} cycles, ${(data.runtime / 1000).toFixed(1)}s runtime`);
+  }
+
+  private autoExportScroll(filename: string): void {
+    try {
+      const scrollData = this.exportAsJSON();
+      const flameData = this.exportAsFlameScroll();
+
+      // In a real implementation, this would save to filesystem
+      // For now, we'll emit an event that the UI can handle
+      eventBus.emit(FLAME_EVENTS.MEMORY_UPDATE, {
+        message: `📜 AUTO-EXPORT: Sacred scroll saved as ${filename}`,
+        timestamp: Date.now(),
+        exportData: { json: scrollData, flame: flameData },
+        filename
+      });
+
+      console.log(`📜 MEMORY ARCHIVE: Auto-exported ${this.scrolls.size} scrolls as ${filename}`);
+    } catch (error) {
+      console.error('🚨 AUTO-EXPORT ERROR:', error);
+      this.emitArchiveEvent(`🚨 AUTO-EXPORT FAILED: ${error}`);
+    }
   }
 
   private emitArchiveEvent(message: string): void {

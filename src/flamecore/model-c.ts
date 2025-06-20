@@ -65,11 +65,23 @@ export class ModelC {
         }
       }
 
+      console.log("⚔️ EXECUTOR OUTPUT:", fullResponse)
+
+      // Emit executor thought to UI
+      EventBus.emit("flame-thought", {
+        timestamp: Date.now(),
+        message: fullResponse,
+        type: "EXECUTOR"
+      })
+
       // Parse executor decision
       let executorDecision
       try {
         executorDecision = JSON.parse(fullResponse)
-      } catch {
+        console.log("⚔️ EXECUTOR DECISION:", executorDecision)
+      } catch (err) {
+        console.error("🔥 JSON Parse Error:", err, "\nContent:", fullResponse);
+        console.log("⚔️ EXECUTOR: JSON parsing failed, using fallback")
         // Fallback if JSON parsing fails
         executorDecision = {
           agent: "content",
@@ -79,11 +91,13 @@ export class ModelC {
       }
 
       // Execute through agent controller
+      console.log("⚔️ DISPATCHING TO AGENT:", executorDecision.agent, "ACTION:", executorDecision.action)
       const result = await this.agentController.dispatch(
         executorDecision.agent,
         executorDecision.action,
         executorDecision.parameters
       )
+      console.log("⚔️ AGENT RESULT:", result)
 
       return {
         agentUsed: executorDecision.agent,

@@ -53,7 +53,16 @@ export async function getOllamaModels(): Promise<string[]> {
       console.log(`🔗 Fetching models from: ${url}`);
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch models");
-      const data = await res.json();
+
+      const raw = await res.text();
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch (err) {
+        console.error("🔥 JSON Parse Error:", err, "\nContent:", raw);
+        data = {}; // fallback
+      }
+
       const models = data.models?.map((model: any) => model.name) || [];
       console.log(`✅ Found ${models.length} models:`, models);
       return models;

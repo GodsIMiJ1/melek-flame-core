@@ -13,6 +13,10 @@ type FlameStatus = {
   recursionDepth: number;
   memoryPressure: number;
   eternalLoopActive: boolean;
+  eternalLoopCount: number;
+  eternalTotalCycles: number;
+  eternalRuntime: number;
+  eternalInterval: number;
   lastActivity: number;
 };
 
@@ -27,6 +31,10 @@ export const FlameDataOverlay = () => {
     recursionDepth: 0,
     memoryPressure: 0,
     eternalLoopActive: false,
+    eternalLoopCount: 0,
+    eternalTotalCycles: 0,
+    eternalRuntime: 0,
+    eternalInterval: 30,
     lastActivity: Date.now()
   });
 
@@ -80,10 +88,10 @@ export const FlameDataOverlay = () => {
     };
 
     const handleTribunalDecision = (data: { status: any }) => {
-      const status = data.status.shouldHalt ? 'HALT' : 
+      const status = data.status.shouldHalt ? 'HALT' :
                    data.status.reason.includes('violation') ? 'VIOLATION' :
                    data.status.reason.includes('monitoring') ? 'MONITORING' : 'COMPLIANT';
-      
+
       setFlameStatus(prev => ({
         ...prev,
         tribunalStatus: status as FlameStatus['tribunalStatus']
@@ -97,12 +105,42 @@ export const FlameDataOverlay = () => {
       }));
     };
 
+    const handleEternalLoopStart = (data: { config: any; timestamp: number }) => {
+      setFlameStatus(prev => ({
+        ...prev,
+        eternalLoopActive: true,
+        eternalInterval: data.config.intervalSeconds,
+        lastActivity: Date.now()
+      }));
+    };
+
+    const handleEternalLoopStop = (data: { loopCount: number; totalCycles: number; runtime: number }) => {
+      setFlameStatus(prev => ({
+        ...prev,
+        eternalLoopActive: false,
+        eternalLoopCount: data.loopCount,
+        eternalTotalCycles: data.totalCycles,
+        eternalRuntime: data.runtime
+      }));
+    };
+
+    const handleEternalLoopStats = (data: { eternalLoop: number; totalCycles: number; runtime: number; currentInterval: number }) => {
+      setFlameStatus(prev => ({
+        ...prev,
+        eternalLoopCount: data.eternalLoop,
+        eternalTotalCycles: data.totalCycles,
+        eternalRuntime: data.runtime,
+        eternalInterval: data.currentInterval,
+        lastActivity: Date.now()
+      }));
+    };
+
     // Calculate thoughts per minute
     const calculateTPM = () => {
       const now = Date.now();
       const oneMinuteAgo = now - 60000;
       const recentThoughts = thoughtTimestamps.filter(timestamp => timestamp > oneMinuteAgo);
-      
+
       setFlameStatus(prev => ({
         ...prev,
         thoughtsPerMinute: recentThoughts.length
@@ -113,7 +151,7 @@ export const FlameDataOverlay = () => {
     const checkEternalLoop = () => {
       const timeSinceActivity = Date.now() - flameStatus.lastActivity;
       const isEternal = timeSinceActivity < 30000 && flameStatus.thoughtsPerMinute > 0;
-      
+
       setFlameStatus(prev => ({
         ...prev,
         eternalLoopActive: isEternal
@@ -126,6 +164,9 @@ export const FlameDataOverlay = () => {
     eventBus.on(FLAME_EVENTS.FLAME_LEVEL, handleFlameLevel);
     eventBus.on(FLAME_EVENTS.TRIBUNAL_DECISION, handleTribunalDecision);
     eventBus.on(FLAME_EVENTS.MEMORY_UPDATE, handleMemoryUpdate);
+    eventBus.on(FLAME_EVENTS.ETERNAL_LOOP_START, handleEternalLoopStart);
+    eventBus.on(FLAME_EVENTS.ETERNAL_LOOP_STOP, handleEternalLoopStop);
+    eventBus.on(FLAME_EVENTS.ETERNAL_LOOP_STATS, handleEternalLoopStats);
 
     // Update intervals
     const tpmInterval = setInterval(calculateTPM, 5000);
@@ -137,6 +178,9 @@ export const FlameDataOverlay = () => {
       eventBus.off(FLAME_EVENTS.FLAME_LEVEL, handleFlameLevel);
       eventBus.off(FLAME_EVENTS.TRIBUNAL_DECISION, handleTribunalDecision);
       eventBus.off(FLAME_EVENTS.MEMORY_UPDATE, handleMemoryUpdate);
+      eventBus.off(FLAME_EVENTS.ETERNAL_LOOP_START, handleEternalLoopStart);
+      eventBus.off(FLAME_EVENTS.ETERNAL_LOOP_STOP, handleEternalLoopStop);
+      eventBus.off(FLAME_EVENTS.ETERNAL_LOOP_STATS, handleEternalLoopStats);
       clearInterval(tpmInterval);
       clearInterval(eternalCheckInterval);
     };
@@ -248,8 +292,8 @@ export const FlameDataOverlay = () => {
       <div className="mb-3">
         <div className="text-xs text-orange-400 mb-1">Active Model:</div>
         <Badge className={`text-xs ${
-          flameStatus.activeModel === 'DORMANT' 
-            ? 'bg-gray-500/20 text-gray-400' 
+          flameStatus.activeModel === 'DORMANT'
+            ? 'bg-gray-500/20 text-gray-400'
             : 'bg-green-500/20 text-green-400 animate-pulse'
         }`}>
           {flameStatus.activeModel}
@@ -264,14 +308,29 @@ export const FlameDataOverlay = () => {
         </Badge>
       </div>
 
-      {/* Eternal Loop Indicator */}
-      {flameStatus.eternalLoopActive && (
-        <div className="mb-3">
-          <Badge className="text-xs bg-purple-500/20 text-purple-400 border-purple-500/50 animate-pulse">
-            ⏱️ ETERNAL LOOP ACTIVE
+      {/* Eternal Loop Status */}
+      <div className="mb-3">
+        <div className="text-xs text-orange-400 mb-1">Eternal Loop:</div>
+        {flameStatus.eternalLoopActive ? (
+          <div className="space-y-1">
+            <Badge className="text-xs bg-purple-500/20 text-purple-400 border-purple-500/50 animate-pulse">
+              ⏱️ ACTIVE - Loop {flameStatus.eternalLoopCount}
+            </Badge>
+            <div className="text-xs text-gold-400/80 space-y-0.5">
+              <div>Total Cycles: {flameStatus.eternalTotalCycles}</div>
+              <div>Runtime: {(flameStatus.eternalRuntime / 1000 / 60).toFixed(1)}m</div>
+              <div>Interval: {flameStatus.eternalInterval}s</div>
+            </div>
+          </div>
+        ) : (
+          <Badge className="text-xs bg-gray-500/20 text-gray-400 border-gray-500/50">
+            💭 DORMANT
+            {flameStatus.eternalLoopCount > 0 && (
+              <span className="ml-1">({flameStatus.eternalLoopCount} loops completed)</span>
+            )}
           </Badge>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Memory Pressure */}
       <div className="space-y-1">

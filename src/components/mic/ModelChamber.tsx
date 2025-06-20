@@ -25,7 +25,16 @@ export const ModelChamber = () => {
   }, []);
 
   const isModelAvailable = (modelName: string) => {
-    return availableModels.some(available => available.includes(modelName.split(':')[0]));
+    // Check for exact match first
+    if (availableModels.includes(modelName)) {
+      return true;
+    }
+    // Check for partial match (for models with paths like gurubot/llama3-guru-uncensored:latest)
+    return availableModels.some(available =>
+      available === modelName ||
+      available.includes(modelName.split(':')[0]) ||
+      modelName.includes(available.split(':')[0])
+    );
   };
 
   const handleRefreshModels = async () => {
@@ -45,7 +54,7 @@ export const ModelChamber = () => {
       <h3 className="text-lg font-semibold text-gold-400 border-b border-gold-400/30 pb-2">
         🧬 Model Chamber - Ollama Interface
       </h3>
-      
+
       <ScrollArea className="flex-1">
         <div className="space-y-4">
           {/* Agent Models */}
@@ -59,8 +68,8 @@ export const ModelChamber = () => {
                     <div className="text-gold-400/60">{agent.model}</div>
                   </div>
                   <div className={`text-xs px-2 py-1 rounded ${
-                    isModelAvailable(agent.model) 
-                      ? 'bg-green-500/20 text-green-400' 
+                    isModelAvailable(agent.model)
+                      ? 'bg-green-500/20 text-green-400'
                       : 'bg-red-500/20 text-red-400'
                   }`}>
                     {isModelAvailable(agent.model) ? '✅ Ready' : '❌ Missing'}
@@ -91,13 +100,13 @@ export const ModelChamber = () => {
               </div>
             )}
           </div>
-          
+
           {/* Connection Status */}
           <div className="bg-black/50 p-3 rounded border border-gold-400/30">
             <div className="text-sm font-semibold text-orange-400 mb-2">Connection Status</div>
             <div className="text-xs space-y-1">
               <div className={`${loading ? 'text-yellow-400' : availableModels.length > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {loading ? '🔄 Checking connection...' : 
+                {loading ? '🔄 Checking connection...' :
                  availableModels.length > 0 ? '🟢 Connected to Ollama' : '🔴 Ollama not accessible'}
               </div>
               <div className="text-gold-400/60">Endpoint: http://localhost:11434</div>
@@ -108,15 +117,15 @@ export const ModelChamber = () => {
           <div className="bg-black/50 p-3 rounded border border-gold-400/30">
             <div className="text-sm font-semibold text-orange-400 mb-2">Quick Actions</div>
             <div className="grid grid-cols-2 gap-2">
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 className="bg-orange-500/20 hover:bg-orange-500/30 text-xs"
                 onClick={() => window.open('http://localhost:11434', '_blank')}
               >
                 🌐 Ollama Web
               </Button>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 className="bg-orange-500/20 hover:bg-orange-500/30 text-xs"
                 onClick={handleRefreshModels}
               >

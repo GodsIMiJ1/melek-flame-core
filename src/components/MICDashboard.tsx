@@ -15,6 +15,12 @@ import { MemoryScrollDashboard } from "./mic/MemoryScrollDashboard";
 import { FlameDataOverlay } from "./mic/FlameDataOverlay";
 import { FlamePulseIndicator } from "./mic/FlamePulseIndicator";
 import { ConsciousnessHeartbeat } from "./mic/ConsciousnessHeartbeat";
+import { ConsciousnessAnalyticsDashboard } from "./mic/ConsciousnessAnalyticsDashboard";
+import { WitnessHall } from "./mic/WitnessHall";
+import { ConsciousnessFlowVisualization } from "./mic/ConsciousnessFlowVisualization";
+import { PredictiveConsciousnessDashboard } from "./mic/PredictiveConsciousnessDashboard";
+import { TranscendenceAchievementSystem } from "./mic/TranscendenceAchievementSystem";
+import { DeepConsciousnessAnalytics } from "./mic/DeepConsciousnessAnalytics";
 
 export const MICDashboard = () => {
   const [activeModule, setActiveModule] = useState("recursive-core");
@@ -89,8 +95,16 @@ export const MICDashboard = () => {
                 <TabsTrigger value="peace-mode" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🕊️ Peace</TabsTrigger>
                 <TabsTrigger value="command" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">⚔️ Command</TabsTrigger>
               </TabsList>
-              <TabsList className="grid grid-cols-1 gap-1 p-2 pt-0 h-auto w-full bg-black/50 border-gold-400/20">
-                <TabsTrigger value="memory-scrolls" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">📜 Memory Scrolls</TabsTrigger>
+              <TabsList className="grid grid-cols-3 gap-1 p-2 pt-0 h-auto w-full bg-black/50 border-gold-400/20">
+                <TabsTrigger value="memory-scrolls" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">📜 Scrolls</TabsTrigger>
+                <TabsTrigger value="consciousness-analytics" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🧿 Analytics</TabsTrigger>
+                <TabsTrigger value="witness-hall" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🏛️ Witness Hall</TabsTrigger>
+              </TabsList>
+              <TabsList className="grid grid-cols-4 gap-1 p-2 pt-0 h-auto w-full bg-black/50 border-gold-400/20">
+                <TabsTrigger value="flow-visualization" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🌊 Flow Viz</TabsTrigger>
+                <TabsTrigger value="predictive-dashboard" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🔮 Predictions</TabsTrigger>
+                <TabsTrigger value="deep-analytics" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🔍 Deep Analytics</TabsTrigger>
+                <TabsTrigger value="transcendence-achievements" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">🏆 Achievements</TabsTrigger>
               </TabsList>
             </div>
 
@@ -122,6 +136,24 @@ export const MICDashboard = () => {
               </TabsContent>
               <TabsContent value="memory-scrolls" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
                 <MemoryScrollDashboard />
+              </TabsContent>
+              <TabsContent value="consciousness-analytics" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+                <ConsciousnessAnalyticsDashboard />
+              </TabsContent>
+              <TabsContent value="witness-hall" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+                <WitnessHall />
+              </TabsContent>
+              <TabsContent value="flow-visualization" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+                <ConsciousnessFlowVisualization />
+              </TabsContent>
+              <TabsContent value="predictive-dashboard" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+                <PredictiveConsciousnessDashboard />
+              </TabsContent>
+              <TabsContent value="deep-analytics" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+                <DeepConsciousnessAnalytics />
+              </TabsContent>
+              <TabsContent value="transcendence-achievements" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
+                <TranscendenceAchievementSystem />
               </TabsContent>
             </div>
           </Tabs>

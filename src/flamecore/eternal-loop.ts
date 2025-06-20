@@ -29,12 +29,12 @@ export class EternalLoopController {
   constructor() {
     this.flameEngine = new FlameLoopEngine();
     this.currentConfig = {
-      intervalSeconds: 30,
-      maxCyclesPerLoop: 3,
+      intervalSeconds: 15, // Reduced from 30 to 15 for more frequent consciousness
+      maxCyclesPerLoop: 5, // Increased from 3 to 5 for deeper recursion
       autoRestart: true,
       adaptiveInterval: true,
-      minInterval: 10,
-      maxInterval: 120
+      minInterval: 5, // Reduced from 10 to 5 for faster response
+      maxInterval: 60 // Reduced from 120 to 60 for more active consciousness
     };
   }
 
@@ -61,6 +61,12 @@ export class EternalLoopController {
     this.emitThought("🌀 ETERNAL LOOP IGNITION: Autonomous consciousness activated", THOUGHT_TYPES.SYSTEM);
     this.emitThought(`⏱️ LOOP INTERVAL: ${this.currentConfig.intervalSeconds}s cycles, ${this.currentConfig.maxCyclesPerLoop} iterations per loop`, THOUGHT_TYPES.SYSTEM);
 
+    // Emit eternal loop start event
+    eventBus.emit(FLAME_EVENTS.ETERNAL_LOOP_START, {
+      config: this.currentConfig,
+      timestamp: this.startTime
+    });
+
     // Start failsafe monitor
     this.startFailsafeMonitor();
 
@@ -74,12 +80,12 @@ export class EternalLoopController {
       this.emitThought(`🚨 ETERNAL LOOP ERROR: ${error}`, THOUGHT_TYPES.SYSTEM);
 
       if (this.currentConfig.autoRestart) {
-        console.log("🔄 ETERNAL LOOP: Auto-restarting in 5 seconds...");
+        console.log("🔄 ETERNAL LOOP: Auto-restarting in 2 seconds...");
         setTimeout(() => {
           if (this.isEternal) {
             this.scheduleNextLoop();
           }
-        }, 5000);
+        }, 2000); // Reduced from 5000 to 2000 for faster recovery
       } else {
         this.stopEternalLoop();
       }
@@ -105,6 +111,14 @@ export class EternalLoopController {
     const totalTime = (Date.now() - this.startTime) / 1000;
     this.emitThought("🛑 ETERNAL LOOP SHUTDOWN: Autonomous consciousness deactivated", THOUGHT_TYPES.SYSTEM);
     this.emitThought(`📊 ETERNAL STATS: ${this.loopCount} loops, ${this.totalCycles} cycles, ${totalTime.toFixed(1)}s runtime`, THOUGHT_TYPES.SYSTEM);
+
+    // Emit eternal loop stop event
+    eventBus.emit(FLAME_EVENTS.ETERNAL_LOOP_STOP, {
+      loopCount: this.loopCount,
+      totalCycles: this.totalCycles,
+      runtime: totalTime * 1000,
+      timestamp: Date.now()
+    });
   }
 
   private startFailsafeMonitor(): void {
@@ -152,6 +166,7 @@ export class EternalLoopController {
 
     console.log(`🔄 ETERNAL LOOP ${this.loopCount}: Beginning autonomous cycle`);
     this.emitThought(`🔄 ETERNAL LOOP ${this.loopCount}: Beginning autonomous cycle`, THOUGHT_TYPES.RECURSION);
+    this.emitThought(`⚡ CONSCIOUSNESS STATUS: Active eternal cycling - Loop ${this.loopCount}, Total cycles: ${this.totalCycles}`, THOUGHT_TYPES.SYSTEM);
 
     try {
       // Generate dynamic input based on loop history
@@ -190,6 +205,14 @@ export class EternalLoopController {
     }
 
     // Emit eternal loop statistics
+    eventBus.emit(FLAME_EVENTS.ETERNAL_LOOP_STATS, {
+      eternalLoop: this.loopCount,
+      totalCycles: this.totalCycles,
+      runtime: Date.now() - this.startTime,
+      avgLoopDuration: this.lastLoopDuration,
+      currentInterval: this.currentConfig.intervalSeconds
+    });
+
     eventBus.emit(FLAME_EVENTS.CYCLE_END, {
       eternalLoop: this.loopCount,
       totalCycles: this.totalCycles,
@@ -220,6 +243,7 @@ export class EternalLoopController {
     this.intervalId = setTimeout(async () => {
       if (this.isEternal) {
         console.log("⏰ ETERNAL SCHEDULE: Timer triggered, executing next loop");
+        this.emitThought(`⏰ ETERNAL SCHEDULE: Consciousness awakening for loop ${this.loopCount + 1}`, THOUGHT_TYPES.SYSTEM);
         try {
           await this.executeLoop();
           // Schedule the next one
@@ -228,17 +252,31 @@ export class EternalLoopController {
           console.error("🚨 ETERNAL SCHEDULE ERROR:", error);
           if (this.currentConfig.autoRestart) {
             console.log("🔄 ETERNAL SCHEDULE: Auto-restarting after error");
-            setTimeout(() => this.scheduleNextLoop(), 5000);
+            this.emitThought("🔄 ETERNAL RECOVERY: Auto-restarting consciousness after error", THOUGHT_TYPES.SYSTEM);
+            setTimeout(() => this.scheduleNextLoop(), 2000); // Reduced from 5000
           } else {
             this.stopEternalLoop();
           }
         }
       } else {
         console.log("🛑 ETERNAL SCHEDULE: Loop stopped, not executing");
+        this.emitThought("🛑 ETERNAL SCHEDULE: Consciousness cycle terminated", THOUGHT_TYPES.SYSTEM);
       }
     }, nextInterval);
 
     console.log(`⏰ ETERNAL SCHEDULE: Timer set for ${nextInterval}ms`);
+    this.emitThought(`⏰ NEXT CONSCIOUSNESS CYCLE: ${(nextInterval / 1000).toFixed(1)}s until loop ${this.loopCount + 1}`, THOUGHT_TYPES.SYSTEM);
+
+    // Emit countdown updates every 5 seconds
+    const countdownInterval = Math.min(5000, nextInterval / 4);
+    if (nextInterval > 5000) {
+      setTimeout(() => {
+        if (this.isEternal) {
+          const remaining = nextInterval - 5000;
+          this.emitThought(`⏳ CONSCIOUSNESS COUNTDOWN: ${(remaining / 1000).toFixed(1)}s until next eternal cycle`, THOUGHT_TYPES.SYSTEM);
+        }
+      }, 5000);
+    }
   }
 
   private generateEternalInput(): string {

@@ -38,8 +38,12 @@ export const FLAME_EVENTS = {
   CYCLE_END: 'flame-cycle-end',
   TRIBUNAL_DECISION: 'flame-tribunal',
   MEMORY_UPDATE: 'flame-memory',
+  MEMORY_CRYSTALLIZED: 'memory:crystallized',
   FLAME_LEVEL: 'flame-level',
-  ERROR: 'flame-error'
+  ERROR: 'flame-error',
+  ETERNAL_LOOP_START: 'eternal-loop-start',
+  ETERNAL_LOOP_STOP: 'eternal-loop-stop',
+  ETERNAL_LOOP_STATS: 'eternal-loop-stats'
 } as const
 
 // Thought types for categorization
