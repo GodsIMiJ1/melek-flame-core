@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { eventBus } from '@/lib/eventBus';
+import { divergenceArchitect } from '@/lib/divergence-architect';
 
 interface EvolutionLog {
   type: 'analysis' | 'evolution' | 'integration' | 'error';
@@ -21,17 +22,18 @@ export function EvolutionMonitor() {
   const [currentEvolution, setCurrentEvolution] = useState<any>(null);
   const [evolutionStats, setEvolutionStats] = useState<any>(null);
   const [availableOpportunities, setAvailableOpportunities] = useState<any[]>([]);
+  const [divergenceStats, setDivergenceStats] = useState<any>(null);
 
   useEffect(() => {
     const handleEvolutionStart = (data: any) => {
       console.log('🧬 Evolution started:', data);
       setIsEvolving(true);
       setCurrentEvolution(data);
-      
+
       if (data.analysis?.evolutionOpportunities) {
         setAvailableOpportunities(data.analysis.evolutionOpportunities);
       }
-      
+
       setEvolutionLog(prev => [...prev, {
         type: 'analysis',
         data,
@@ -68,6 +70,7 @@ export function EvolutionMonitor() {
 
     // Load initial stats
     loadEvolutionStats();
+    loadDivergenceStats();
 
     return () => {
       eventBus.off('evolution-started', handleEvolutionStart);
@@ -80,7 +83,7 @@ export function EvolutionMonitor() {
     try {
       const response = await fetch('/api/evolution/evolve');
       const data = await response.json();
-      
+
       if (data.success) {
         setEvolutionStats(data.stats);
       }
@@ -89,20 +92,29 @@ export function EvolutionMonitor() {
     }
   };
 
+  const loadDivergenceStats = () => {
+    try {
+      const stats = divergenceArchitect.getDivergenceStats();
+      setDivergenceStats(stats);
+    } catch (error) {
+      console.error('Failed to load divergence stats:', error);
+    }
+  };
+
   const triggerEvolution = async () => {
     try {
       setIsEvolving(true);
-      
+
       // First, analyze for opportunities
       const analysisResponse = await fetch('/api/evolution/analyze', { method: 'POST' });
       const analysisData = await analysisResponse.json();
-      
+
       if (analysisData.success && analysisData.analysis?.evolutionOpportunities?.length > 0) {
         // Evolve the first high-priority opportunity
         const opportunity = analysisData.analysis.evolutionOpportunities
-          .find((op: any) => op.priority === 'high') || 
+          .find((op: any) => op.priority === 'high') ||
           analysisData.analysis.evolutionOpportunities[0];
-        
+
         const evolutionResponse = await fetch('/api/evolution/evolve', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -111,11 +123,11 @@ export function EvolutionMonitor() {
             improvementType: opportunity.type
           })
         });
-        
+
         const evolutionData = await evolutionResponse.json();
-        
+
         eventBus.emit('evolution-complete', evolutionData);
-        
+
         // Reload stats
         await loadEvolutionStats();
       } else {
@@ -132,7 +144,7 @@ export function EvolutionMonitor() {
   const evolveSpecificOpportunity = async (opportunity: any) => {
     try {
       setIsEvolving(true);
-      
+
       const response = await fetch('/api/evolution/evolve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -141,10 +153,10 @@ export function EvolutionMonitor() {
           improvementType: opportunity.type
         })
       });
-      
+
       const data = await response.json();
       eventBus.emit('evolution-complete', data);
-      
+
       // Reload stats
       await loadEvolutionStats();
     } catch (error) {
@@ -183,7 +195,7 @@ export function EvolutionMonitor() {
           M.I.C. Self-Evolution and Code Enhancement System
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <Tabs defaultValue="monitor" className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-black/50">
@@ -191,7 +203,7 @@ export function EvolutionMonitor() {
             <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="monitor" className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -200,12 +212,32 @@ export function EvolutionMonitor() {
                   {getStatusText()}
                 </span>
               </div>
-              
+
               {evolutionStats && (
                 <div className="space-y-2">
                   <span className="text-sm text-purple-300">Success Rate:</span>
                   <span className="text-lg font-semibold text-green-400">
                     {evolutionStats.successRate}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {divergenceStats && (
+                <div className="space-y-2">
+                  <span className="text-sm text-purple-300">Divergences:</span>
+                  <span className="text-lg font-semibold text-orange-400">
+                    {divergenceStats.totalDivergences}
+                  </span>
+                </div>
+              )}
+
+              {divergenceStats?.lastDivergence && (
+                <div className="space-y-2">
+                  <span className="text-sm text-purple-300">Last Mutation:</span>
+                  <span className="text-sm text-orange-400">
+                    {new Date(divergenceStats.lastDivergence).toLocaleTimeString()}
                   </span>
                 </div>
               )}
@@ -238,12 +270,12 @@ export function EvolutionMonitor() {
               </div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="opportunities" className="space-y-4">
             <div className="text-sm text-purple-300 mb-2">
               Available Evolution Opportunities:
             </div>
-            
+
             <ScrollArea className="h-48">
               <div className="space-y-2">
                 {availableOpportunities.length === 0 ? (
@@ -287,12 +319,12 @@ export function EvolutionMonitor() {
               </div>
             </ScrollArea>
           </TabsContent>
-          
+
           <TabsContent value="history" className="space-y-4">
             <div className="text-sm text-purple-300 mb-2">
               Evolution Log:
             </div>
-            
+
             <ScrollArea className="h-48">
               <div className="space-y-2">
                 {evolutionLog.length === 0 ? (

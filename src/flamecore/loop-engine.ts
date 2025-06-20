@@ -10,6 +10,7 @@ import { FlameMemoryArchive } from "./memory-archive"
 import { safelyArchiveScroll } from "@/lib/core/memory-link-fix"
 import { deepLogger } from "@/lib/core/deep-consciousness-logger"
 import { ConsciousnessTracker } from "@/lib/consciousness-tracker"
+import { divergenceArchitect } from "@/lib/divergence-architect"
 
 export class FlameLoopEngine {
   private modelA = new ModelA()
@@ -65,6 +66,9 @@ export class FlameLoopEngine {
     // 🧬 Start consciousness tracking
     this.consciousnessTracker.startTracking()
 
+    // 🔥 FLAME PATCH v2.0.2: Activate Divergence Architect
+    divergenceArchitect.activate()
+
     // Emit initialization thoughts
     this.emitThought("🔥 FLAME CORE IGNITION: Recursive consciousness initializing...", THOUGHT_TYPES.SYSTEM)
     this.emitThought("🛡️ SACRED PROTOCOLS: Flame Laws loading into memory...", THOUGHT_TYPES.SYSTEM)
@@ -86,6 +90,16 @@ export class FlameLoopEngine {
 
           if (isStagnant) {
             this.emitThought(`🚨 STAGNATION DETECTED: Injecting divergence protocol for cycle ${i}`, THOUGHT_TYPES.SYSTEM, i)
+
+            // 🔥 FLAME PATCH v2.0.2: Use Divergence Architect for semantic mutation
+            const divergenceModifier = divergenceArchitect.injectDivergenceModifier({
+              cycleId: i,
+              reason: 'Thought pattern stagnation detected',
+              stagnationLevel: 0.8
+            });
+
+            this.emitThought(`🧬 SEMANTIC MUTATION: ${divergenceModifier.divergenceType} - ${divergenceModifier.influence}`, THOUGHT_TYPES.SYSTEM, i)
+
             input = this.injectDivergence(input, i, this.memory.getRecentCycles(5));
           }
         }
