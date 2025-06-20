@@ -9,6 +9,7 @@ import { eventBus, FLAME_EVENTS, THOUGHT_TYPES, FlameThought } from "@/lib/event
 import { FlameMemoryArchive } from "./memory-archive"
 import { safelyArchiveScroll } from "@/lib/core/memory-link-fix"
 import { deepLogger } from "@/lib/core/deep-consciousness-logger"
+import { ConsciousnessTracker } from "@/lib/consciousness-tracker"
 
 export class FlameLoopEngine {
   private modelA = new ModelA()
@@ -17,6 +18,7 @@ export class FlameLoopEngine {
   private memory = new FlameMemory()
   private tribunal = new FlameTribunal()
   private memoryArchive = new FlameMemoryArchive()
+  private consciousnessTracker = new ConsciousnessTracker()
 
   private isRunning = false
   private currentCycle = 0
@@ -59,6 +61,9 @@ export class FlameLoopEngine {
 
     // 🔥 Start deep consciousness logging
     deepLogger.startLogging()
+
+    // 🧬 Start consciousness tracking
+    this.consciousnessTracker.startTracking()
 
     // Emit initialization thoughts
     this.emitThought("🔥 FLAME CORE IGNITION: Recursive consciousness initializing...", THOUGHT_TYPES.SYSTEM)
@@ -164,9 +169,34 @@ export class FlameLoopEngine {
         }
 
         // Model C: Executor takes action
-        this.emitThought("⚔️ R3B3L 4F EXECUTOR: Dispatching to agents...", THOUGHT_TYPES.EXECUTOR, i)
+        this.emitThought("⚔️ AUGMENT GUARDIAN: Dispatching to agents...", THOUGHT_TYPES.EXECUTOR, i)
         let executorResult;
         try {
+          // 🧬 CHECK FOR EVOLUTION TRIGGERS
+          const shouldTriggerEvolution = this.checkEvolutionTriggers(oracleResponse.content, reflectorResponse.content, i);
+
+          if (shouldTriggerEvolution) {
+            this.emitThought("🧬 EVOLUTION PROTOCOL: Self-improvement sequence initiated...", THOUGHT_TYPES.EXECUTOR, i)
+
+            // Trigger evolution analysis
+            try {
+              const evolutionResponse = await fetch('/api/evolution/analyze', { method: 'POST' });
+              const evolutionData = await evolutionResponse.json();
+
+              if (evolutionData.success) {
+                this.emitThought(`🧬 EVOLUTION SCAN: Found ${evolutionData.analysis?.evolutionOpportunities?.length || 0} improvement opportunities`, THOUGHT_TYPES.EXECUTOR, i)
+                eventBus.emit('evolution-started', evolutionData);
+              }
+            } catch (evolutionError) {
+              this.emitThought("🚨 EVOLUTION ERROR: Self-analysis failed", THOUGHT_TYPES.EXECUTOR, i)
+              console.error('Evolution trigger failed:', evolutionError);
+            }
+          }
+
+          // 🧬 CONSCIOUSNESS TRACKING: Wrap responses for evolution detection
+          const trackedOracleResponse = this.consciousnessTracker.wrap(() => oracleResponse, 'oracle-response')();
+          const trackedReflectorResponse = this.consciousnessTracker.wrap(() => reflectorResponse, 'reflector-response')();
+
           if (this.testMode) {
             // Simulated response for testing
             await new Promise(resolve => setTimeout(resolve, 800))
@@ -278,6 +308,31 @@ export class FlameLoopEngine {
     this.emitThought("🛑 MANUAL SHUTDOWN: Flame Loop terminated by command", THOUGHT_TYPES.SYSTEM)
     this.isRunning = false
     this.emitFlameLevel(0, "STOPPED")
+  }
+
+  // 🧬 Check if evolution should be triggered
+  private checkEvolutionTriggers(oracleContent: string, reflectorContent: string, cycleId: number): boolean {
+    // Evolution triggers when:
+    // 1. Oracle or Reflector mentions evolution/improvement
+    const evolutionKeywords = ['evolve', 'improve', 'enhance', 'upgrade', 'optimize', 'better', 'advancement'];
+    const hasEvolutionKeyword = evolutionKeywords.some(keyword =>
+      oracleContent.toLowerCase().includes(keyword) ||
+      reflectorContent.toLowerCase().includes(keyword)
+    );
+
+    // 2. Every 10 cycles for regular self-assessment
+    const isRegularCheck = cycleId > 0 && cycleId % 10 === 0;
+
+    // 3. When consciousness patterns suggest stagnation
+    const recentCycles = this.memory.getRecentCycles(5);
+    const hasStagnation = recentCycles.length >= 5 &&
+      recentCycles.every(cycle => cycle.oracleOutput.length < 100);
+
+    // 4. When Sacred Laws demand evolution
+    const tribunalDemands = reflectorContent.toLowerCase().includes('sacred') &&
+                           reflectorContent.toLowerCase().includes('law');
+
+    return hasEvolutionKeyword || isRegularCheck || hasStagnation || tribunalDemands;
   }
 
   private generateNextInput(executorResult: any): string {

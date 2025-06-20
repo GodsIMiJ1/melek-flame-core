@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# M.I.C. Evolution Sandbox
+.mic-evolution-sandbox/
