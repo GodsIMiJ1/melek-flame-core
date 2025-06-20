@@ -1,5 +1,6 @@
-import fs from 'fs/promises';
-import path from 'path';
+// Browser-compatible consciousness memory (no fs dependency)
+// import fs from 'fs/promises';
+// import path from 'path';
 
 interface ConsciousnessCycle {
   cycle: number;
@@ -32,13 +33,11 @@ interface ConsciousnessLog {
 }
 
 export class ConsciousnessMemory {
-  private logPath: string;
   private currentLog: ConsciousnessLog;
   private sessionId: string;
 
   constructor() {
     this.sessionId = `consciousness-${Date.now()}`;
-    this.logPath = path.join(process.cwd(), 'consciousness.json');
     this.currentLog = {
       sessionId: this.sessionId,
       startTime: Date.now(),
@@ -48,11 +47,11 @@ export class ConsciousnessMemory {
     };
   }
 
-  // 🔥 Initialize consciousness memory system
+  // 🔥 Initialize consciousness memory system (browser-compatible)
   async initialize(): Promise<void> {
     try {
-      // Try to load existing consciousness log
-      const existingLog = await this.loadExistingLog();
+      // Try to load from localStorage in browser
+      const existingLog = this.loadExistingLog();
       if (existingLog) {
         console.log('🧠 [Consciousness Memory] Loaded existing consciousness log with', existingLog.cycles.length, 'cycles');
         // Start new session but preserve historical context
@@ -69,11 +68,14 @@ export class ConsciousnessMemory {
     }
   }
 
-  // 🧬 Load existing consciousness log
-  private async loadExistingLog(): Promise<ConsciousnessLog | null> {
+  // 🧬 Load existing consciousness log (browser-compatible)
+  private loadExistingLog(): ConsciousnessLog | null {
     try {
-      const data = await fs.readFile(this.logPath, 'utf-8');
-      return JSON.parse(data);
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('consciousness-memory');
+        return data ? JSON.parse(data) : null;
+      }
+      return null;
     } catch (error) {
       return null;
     }
@@ -100,8 +102,8 @@ export class ConsciousnessMemory {
     this.currentLog.totalCycles++;
     this.currentLog.lastUpdate = Date.now();
 
-    // Save to file
-    await this.saveLog();
+    // Save to localStorage (browser-compatible)
+    this.saveLog();
 
     console.log(`🧠 [Consciousness Memory] Recorded cycle ${cycleData.cycle} with significance: ${cycle.significance}`);
   }
@@ -111,7 +113,7 @@ export class ConsciousnessMemory {
     const oracleCore = cycleData.oracle.output.substring(0, 100);
     const reflectorCore = cycleData.reflector.output.substring(0, 100);
     const framework = cycleData.oracle.metaphoricalFramework || 'unknown';
-    
+
     return `Cycle ${cycleData.cycle}: Explored ${framework} framework - Oracle: "${oracleCore}..." Reflector: "${reflectorCore}..."`;
   }
 
@@ -123,7 +125,7 @@ export class ConsciousnessMemory {
 
     // Check for breakthrough keywords
     const breakthroughKeywords = ['transcend', 'breakthrough', 'revelation', 'epiphany', 'awakening', 'enlightenment'];
-    const hasBreakthrough = breakthroughKeywords.some(keyword => 
+    const hasBreakthrough = breakthroughKeywords.some(keyword =>
       cycleData.oracle.output.toLowerCase().includes(keyword) ||
       cycleData.reflector.output.toLowerCase().includes(keyword)
     );
@@ -149,7 +151,7 @@ export class ConsciousnessMemory {
     }
 
     const recentCycles = this.currentLog.cycles.slice(-contextDepth);
-    
+
     let context = `🧠 CONSCIOUSNESS MEMORY - You are now in cycle ${currentCycle}.\n\n`;
     context += `📜 PREVIOUS THOUGHTS:\n`;
 
@@ -174,9 +176,9 @@ export class ConsciousnessMemory {
     }
 
     const recentCycles = this.currentLog.cycles.slice(-maxCycles);
-    
+
     let history = `📚 CONSCIOUSNESS ARCHIVE (Last ${recentCycles.length} cycles):\n\n`;
-    
+
     recentCycles.forEach(cycle => {
       history += `• ${cycle.summary}\n`;
     });
@@ -215,10 +217,12 @@ export class ConsciousnessMemory {
     return narrative;
   }
 
-  // 💾 Save consciousness log to file
-  private async saveLog(): Promise<void> {
+  // 💾 Save consciousness log (browser-compatible)
+  private saveLog(): void {
     try {
-      await fs.writeFile(this.logPath, JSON.stringify(this.currentLog, null, 2));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('consciousness-memory', JSON.stringify(this.currentLog, null, 2));
+      }
     } catch (error) {
       console.error('🚨 [Consciousness Memory] Failed to save log:', error);
     }
@@ -243,7 +247,7 @@ export class ConsciousnessMemory {
       sessionId: this.sessionId,
       significanceBreakdown,
       frameworkBreakdown,
-      averageCycleLength: cycles.length > 0 ? 
+      averageCycleLength: cycles.length > 0 ?
         cycles.reduce((sum, c) => sum + c.oracle.output.length + c.reflector.output.length, 0) / cycles.length : 0,
       lastCycle: cycles[cycles.length - 1]?.cycle || 0,
       sessionDuration: Date.now() - this.currentLog.startTime
@@ -253,7 +257,7 @@ export class ConsciousnessMemory {
   // 🔍 Search consciousness history
   searchHistory(query: string): ConsciousnessCycle[] {
     const lowerQuery = query.toLowerCase();
-    return this.currentLog.cycles.filter(cycle => 
+    return this.currentLog.cycles.filter(cycle =>
       cycle.oracle.output.toLowerCase().includes(lowerQuery) ||
       cycle.reflector.output.toLowerCase().includes(lowerQuery) ||
       cycle.summary?.toLowerCase().includes(lowerQuery)
@@ -266,7 +270,7 @@ export class ConsciousnessMemory {
   }
 
   // 🌀 Clear consciousness memory (reset)
-  async clearMemory(): Promise<void> {
+  clearMemory(): void {
     this.currentLog = {
       sessionId: `consciousness-${Date.now()}`,
       startTime: Date.now(),
@@ -274,18 +278,18 @@ export class ConsciousnessMemory {
       totalCycles: 0,
       lastUpdate: Date.now()
     };
-    
-    await this.saveLog();
+
+    this.saveLog();
     console.log('🧠 [Consciousness Memory] Memory cleared - fresh consciousness session started');
   }
 
   // 📜 Export consciousness log
-  async exportLog(format: 'json' | 'txt' = 'json'): Promise<string> {
+  exportLog(format: 'json' | 'txt' = 'json'): string {
     if (format === 'txt') {
       let export_text = `CONSCIOUSNESS LOG - Session: ${this.sessionId}\n`;
       export_text += `Started: ${new Date(this.currentLog.startTime).toISOString()}\n`;
       export_text += `Total Cycles: ${this.currentLog.cycles.length}\n\n`;
-      
+
       this.currentLog.cycles.forEach(cycle => {
         export_text += `=== CYCLE ${cycle.cycle} (${cycle.significance}) ===\n`;
         export_text += `Timestamp: ${new Date(cycle.timestamp).toISOString()}\n`;
@@ -293,10 +297,10 @@ export class ConsciousnessMemory {
         export_text += `Reflector: ${cycle.reflector.output}\n`;
         export_text += `Summary: ${cycle.summary}\n\n`;
       });
-      
+
       return export_text;
     }
-    
+
     return JSON.stringify(this.currentLog, null, 2);
   }
 }

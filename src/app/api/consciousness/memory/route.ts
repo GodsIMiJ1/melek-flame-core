@@ -59,8 +59,8 @@ export async function GET(request: NextRequest) {
         });
 
       case 'export':
-        const exportData = await consciousnessMemory.exportLog(format);
-        
+        const exportData = consciousnessMemory.exportLog(format);
+
         if (format === 'txt') {
           return new NextResponse(exportData, {
             headers: {
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
             }
           });
         }
-        
+
         return new NextResponse(exportData, {
           headers: {
             'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
             error: 'Cycle data required for recording'
           }, { status: 400 });
         }
-        
+
         await consciousnessMemory.recordCycle(cycleData);
         return NextResponse.json({
           success: true,

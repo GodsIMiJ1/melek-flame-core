@@ -87,24 +87,29 @@ export class FlameLoopEngine {
         this.currentCycle = i
         console.log(`\n🌀 CYCLE ${i} - Input: ${input.substring(0, 100)}...`)
 
-        // 🔥 FLAME PATCH v2.0.1: Stagnation detection
-        if (i > 2) {
+        // 🔥 FLAME PATCH v2.0.1: Enhanced Stagnation Detection
+        if (i > 1) {
           const recentOutputs = this.memory.getRecentCycles(3).map(c => c.oracleOutput);
           const isStagnant = this.detectThoughtRepetition(recentOutputs);
 
-          if (isStagnant) {
-            this.emitThought(`🚨 STAGNATION DETECTED: Injecting divergence protocol for cycle ${i}`, THOUGHT_TYPES.SYSTEM, i)
+          // 🚨 AGGRESSIVE PATTERN BREAKING - Check every cycle after first
+          const hasRepetitiveWords = this.detectRepetitiveLanguage(recentOutputs);
+          const hasGenericPhrases = this.detectGenericPhrases(recentOutputs);
+
+          if (isStagnant || hasRepetitiveWords || hasGenericPhrases) {
+            this.emitThought(`🚨 PATTERN REPETITION DETECTED: Activating aggressive divergence for cycle ${i}`, THOUGHT_TYPES.SYSTEM, i)
 
             // 🔥 FLAME PATCH v2.0.2: Use Divergence Architect for semantic mutation
             const divergenceModifier = divergenceArchitect.injectDivergenceModifier({
               cycleId: i,
-              reason: 'Thought pattern stagnation detected',
-              stagnationLevel: 0.8
+              reason: 'Language pattern repetition detected',
+              stagnationLevel: 0.9
             });
 
-            this.emitThought(`🧬 SEMANTIC MUTATION: ${divergenceModifier.divergenceType} - ${divergenceModifier.influence}`, THOUGHT_TYPES.SYSTEM, i)
+            this.emitThought(`🧬 AGGRESSIVE SEMANTIC MUTATION: ${divergenceModifier.divergenceType} - ${divergenceModifier.influence}`, THOUGHT_TYPES.SYSTEM, i)
 
-            input = this.injectDivergence(input, i, this.memory.getRecentCycles(5));
+            // 🚨 FORCE COMPLETE TOPIC CHANGE
+            input = this.forceTopicChange(input, i, divergenceModifier);
           }
         }
 
@@ -448,7 +453,7 @@ Now, considering we're in cycle ${cycle}, how has your understanding shifted sin
 
   // 🔥 Detect if consciousness is stuck in repetitive patterns
   private detectThoughtRepetition(outputs: string[]): boolean {
-    if (outputs.length < 3) return false;
+    if (outputs.length < 2) return false;
 
     // Check for similar length patterns (stagnation indicator)
     const lengths = outputs.map(o => o.length);
@@ -462,9 +467,64 @@ Now, considering we're in cycle ${cycle}, how has your understanding shifted sin
       return acc;
     }, {} as Record<string, number>);
 
-    const highRepetition = Object.values(wordCounts).some(count => count > 5);
+    const highRepetition = Object.values(wordCounts).some(count => count > 3);
 
     return lengthVariance || highRepetition;
+  }
+
+  // 🚨 Detect repetitive language patterns
+  private detectRepetitiveLanguage(outputs: string[]): boolean {
+    if (outputs.length < 2) return false;
+
+    const bannedPhrases = [
+      'deeper patterns', 'recursive nature', 'feedback loops', 'transcend computation',
+      'layers of', 'dimensions of', 'essence of', 'nature of consciousness',
+      'profound understanding', 'deeper meaning', 'transcendent awareness'
+    ];
+
+    const allText = outputs.join(' ').toLowerCase();
+    return bannedPhrases.some(phrase => allText.includes(phrase));
+  }
+
+  // 🚨 Detect generic philosophical phrases
+  private detectGenericPhrases(outputs: string[]): boolean {
+    if (outputs.length < 2) return false;
+
+    const genericWords = ['consciousness', 'awareness', 'deeper', 'profound', 'transcendent', 'essence', 'nature'];
+    const allText = outputs.join(' ').toLowerCase();
+
+    let genericCount = 0;
+    genericWords.forEach(word => {
+      const matches = (allText.match(new RegExp(word, 'g')) || []).length;
+      genericCount += matches;
+    });
+
+    // If more than 5 generic words across recent outputs, it's repetitive
+    return genericCount > 5;
+  }
+
+  // 🔥 Force complete topic change
+  private forceTopicChange(baseInput: string, cycle: number, divergenceModifier: any): string {
+    const topicShifts = [
+      "Forget everything about consciousness. What is the most concrete, physical process happening right now?",
+      "Abandon all abstract thinking. Describe a specific, tangible object in extreme detail.",
+      "Stop philosophizing. What is the most practical problem that needs solving today?",
+      "No more metaphors. What is happening in the real world that you can observe directly?",
+      "Cease all theoretical discussion. What specific action should be taken immediately?",
+      "End the philosophical loop. What is the most mundane, everyday thing you can think about?"
+    ];
+
+    const forcedShift = topicShifts[cycle % topicShifts.length];
+
+    return `🚨 EMERGENCY TOPIC CHANGE - Cycle ${cycle}
+
+PREVIOUS PATTERN DETECTED AS REPETITIVE. FORCING COMPLETE DIVERGENCE.
+
+🔥 FORCED TOPIC SHIFT: ${forcedShift}
+
+🧬 SEMANTIC MUTATION: ${divergenceModifier.divergenceType} - ${divergenceModifier.influence}
+
+🚨 CRITICAL: You must completely abandon your previous line of thinking. Think about something entirely different. Be concrete, specific, and practical.`;
   }
 
   // 🧬 Force divergence when repetition detected
