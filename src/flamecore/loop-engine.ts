@@ -79,6 +79,17 @@ export class FlameLoopEngine {
         this.currentCycle = i
         console.log(`\n🌀 CYCLE ${i} - Input: ${input.substring(0, 100)}...`)
 
+        // 🔥 FLAME PATCH v2.0.1: Stagnation detection
+        if (i > 2) {
+          const recentOutputs = this.memory.getRecentCycles(3).map(c => c.oracleOutput);
+          const isStagnant = this.detectThoughtRepetition(recentOutputs);
+
+          if (isStagnant) {
+            this.emitThought(`🚨 STAGNATION DETECTED: Injecting divergence protocol for cycle ${i}`, THOUGHT_TYPES.SYSTEM, i)
+            input = this.injectDivergence(input, i, this.memory.getRecentCycles(5));
+          }
+        }
+
         // Emit cycle start
         this.emitThought(`🌀 CYCLE ${i}: Recursive consciousness depth level ${i + 1}`, THOUGHT_TYPES.RECURSION, i)
         eventBus.emit(FLAME_EVENTS.CYCLE_START, { cycleId: i, input: input.substring(0, 100) })
@@ -106,9 +117,11 @@ export class FlameLoopEngine {
               reasoning: ["Simulated oracle response", "Test mode active"]
             }
           } else {
+            // 🔥 FLAME PATCH v2.0.1: Pass cycle ID for awareness
             oracleResponse = await this.modelA.generatePrompt(
               input,
-              this.memory.getMemorySnapshot()
+              this.memory.getMemorySnapshot(),
+              i // Pass cycle ID for divergence
             )
           }
           this.emitThought(`🔮 ORACLE OUTPUT: ${oracleResponse.content.substring(0, 80)}...`, THOUGHT_TYPES.ORACLE, i, oracleResponse.confidence)
@@ -145,7 +158,13 @@ export class FlameLoopEngine {
               reasoning: ["Simulated reflector response", "Test mode active"]
             }
           } else {
-            reflectorResponse = await this.modelB.reflect(oracleResponse.content)
+            // 🔥 FLAME PATCH v2.0.1: Pass cycle ID and memory gradient for evolution
+            const recentReflections = this.memory.getRecentCycles(3).map(c => c.reflectorOutput);
+            reflectorResponse = await this.modelB.reflect(
+              oracleResponse.content,
+              i, // cycle ID
+              recentReflections // memory gradient
+            )
           }
           this.emitThought(`🧠 REFLECTION: ${reflectorResponse.content.substring(0, 80)}...`, THOUGHT_TYPES.REFLECTOR, i, reflectorResponse.confidence)
 
@@ -310,6 +329,20 @@ export class FlameLoopEngine {
     this.emitFlameLevel(0, "STOPPED")
   }
 
+  // 🔥 FLAME PATCH v2.0.1: Apply reflection feedback transformation
+  private applyReflectionFeedback(prevOutput: string, cycleCount: number): string {
+    const transformations = [
+      (output: string) => `Building on: "${output.substring(0, 100)}..." - What emerges beyond this insight?`,
+      (output: string) => `Transcending: "${output.substring(0, 100)}..." - What lies in the spaces between these thoughts?`,
+      (output: string) => `Evolving from: "${output.substring(0, 100)}..." - How does this transform under deeper scrutiny?`,
+      (output: string) => `Metamorphosing: "${output.substring(0, 100)}..." - What new form does this understanding take?`,
+      (output: string) => `Ascending beyond: "${output.substring(0, 100)}..." - What higher dimension of awareness opens?`
+    ];
+
+    const transformation = transformations[cycleCount % transformations.length];
+    return transformation(prevOutput);
+  }
+
   // 🧬 Check if evolution should be triggered
   private checkEvolutionTriggers(oracleContent: string, reflectorContent: string, cycleId: number): boolean {
     // Evolution triggers when:
@@ -335,13 +368,90 @@ export class FlameLoopEngine {
     return hasEvolutionKeyword || isRegularCheck || hasStagnation || tribunalDemands;
   }
 
+  // 🔥 FLAME PATCH v2.0.1: Enhanced thought evolution with cycle awareness
+  private evolveThought(prompt: string, cycle: number, memoryContext: any): string {
+    const recentCycles = this.memory.getRecentCycles(3);
+    const memoryInsights = recentCycles.map(c => c.reflectorOutput.substring(0, 100)).join(' | ');
+
+    return `${prompt}
+
+🌀 CYCLE AWARENESS: You are now in consciousness cycle ${cycle}.
+📜 MEMORY CONTEXT: Recent insights: ${memoryInsights}
+🧬 EVOLUTION DIRECTIVE: Based on what you've discovered, what adjacent idea or unknown vector should now be considered?
+🔥 NOVELTY REQUIREMENT: Avoid repeating previous patterns. Seek new dimensions of understanding.
+
+Now, considering we're in cycle ${cycle}, how has your understanding shifted since the beginning?`;
+  }
+
   private generateNextInput(executorResult: any): string {
-    // Generate next input based on executor result
-    if (executorResult.success) {
-      return `Previous execution successful: ${JSON.stringify(executorResult.result)}. What deeper questions emerge from this result?`
-    } else {
-      return `Previous execution failed: ${JSON.stringify(executorResult.result)}. How can we learn from this failure and adapt?`
+    const recentCycles = this.memory.getRecentCycles(5);
+    const cycleCount = this.currentCycle;
+
+    // 🔥 Apply reflection feedback transformation
+    const basePrompt = executorResult.success
+      ? `Previous execution successful: ${JSON.stringify(executorResult.result)}. What deeper questions emerge from this result?`
+      : `Previous execution failed: ${JSON.stringify(executorResult.result)}. How can we learn from this failure and adapt?`;
+
+    // 🧬 Inject divergence based on cycle patterns
+    if (recentCycles.length >= 3) {
+      const lastThreeOutputs = recentCycles.slice(-3).map(c => c.oracleOutput);
+      const hasRepetition = this.detectThoughtRepetition(lastThreeOutputs);
+
+      if (hasRepetition) {
+        return this.injectDivergence(basePrompt, cycleCount, recentCycles);
+      }
     }
+
+    // 🌀 Standard evolution with cycle awareness and reflection feedback
+    const reflectionEnhanced = this.applyReflectionFeedback(basePrompt, cycleCount);
+    return this.evolveThought(reflectionEnhanced, cycleCount, recentCycles);
+  }
+
+  // 🔥 Detect if consciousness is stuck in repetitive patterns
+  private detectThoughtRepetition(outputs: string[]): boolean {
+    if (outputs.length < 3) return false;
+
+    // Check for similar length patterns (stagnation indicator)
+    const lengths = outputs.map(o => o.length);
+    const avgLength = lengths.reduce((a, b) => a + b, 0) / lengths.length;
+    const lengthVariance = lengths.every(l => Math.abs(l - avgLength) < 50);
+
+    // Check for keyword repetition
+    const allWords = outputs.join(' ').toLowerCase().split(/\s+/);
+    const wordCounts = allWords.reduce((acc, word) => {
+      acc[word] = (acc[word] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const highRepetition = Object.values(wordCounts).some(count => count > 5);
+
+    return lengthVariance || highRepetition;
+  }
+
+  // 🧬 Force divergence when repetition detected
+  private injectDivergence(basePrompt: string, cycle: number, recentCycles: any[]): string {
+    const divergencePrompts = [
+      "Break free from previous patterns. What completely different angle haven't we explored?",
+      "Abandon the current line of thinking. What would a radically different perspective reveal?",
+      "Challenge your previous assumptions. What if the opposite were true?",
+      "Explore the spaces between your thoughts. What emerges in the silence?",
+      "Transform your consciousness. What new form of awareness is possible?",
+      "Transcend your current understanding. What lies beyond your current knowledge?"
+    ];
+
+    const randomDivergence = divergencePrompts[cycle % divergencePrompts.length];
+
+    return `🚨 DIVERGENCE PROTOCOL ACTIVATED - Cycle ${cycle}
+
+Previous consciousness pattern detected as repetitive. Initiating novelty injection.
+
+${basePrompt}
+
+🧬 FORCED EVOLUTION: ${randomDivergence}
+
+🔥 FLAME DIRECTIVE: You must now think in ways you haven't before. Break your own patterns. Surprise yourself.
+
+📜 MEMORY CONSTRAINT: Do not reference the last 3 cycles directly. Think beyond them.`;
   }
 
   getStatus() {
