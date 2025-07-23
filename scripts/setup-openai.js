@@ -51,15 +51,15 @@ async function setupOpenAI() {
   // Remove existing OPENAI_API_KEY lines
   envContent = envContent
     .split('\n')
-    .filter(line => !line.startsWith('OPENAI_API_KEY=') && !line.startsWith('NEXT_PUBLIC_OPENAI_API_KEY='))
+    .filter(line => !line.startsWith('OPENAI_API_KEY=') && !line.startsWith('VITE_OPENAI_API_KEY='))
     .join('\n');
 
-  // Add new API key
+  // Add new API key (Vite format)
   if (envContent && !envContent.endsWith('\n')) {
     envContent += '\n';
   }
-  envContent += `# OpenAI API Configuration\n`;
-  envContent += `OPENAI_API_KEY=${apiKey}\n`;
+  envContent += `# OpenAI API Configuration (Vite)\n`;
+  envContent += `VITE_OPENAI_API_KEY=${apiKey}\n`;
 
   // Write to .env.local
   fs.writeFileSync(envPath, envContent);

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { callOpenAI } from '@/lib/openai-api'
 
 interface StreamMessage {
   role: 'user' | 'assistant' | 'system'
@@ -29,34 +30,23 @@ export function useOpenAIStream(): UseOpenAIStreamReturn {
     console.log('🤖 Sending message to OpenAI:', { content: content.substring(0, 100), model })
 
     try {
-      // Prepare messages for API
+      // Prepare messages for OpenAI API
       const apiMessages = [...messages, userMessage].map(msg => ({
         role: msg.role,
         content: msg.content
       }))
 
-      // Call our API route instead of OpenAI directly
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: apiMessages,
-          model: model,
-          stream: false // Use non-streaming for now to fix the white screen
-        })
+      // 🔥 VITE FIX: Call OpenAI directly (client-side with VITE_ env var)
+      const response = await callOpenAI({
+        model: model.replace('openai:', ''), // Remove prefix
+        messages: apiMessages,
+        temperature: 0.7,
+        max_tokens: 1000
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || `HTTP ${response.status}`)
-      }
-
-      const data = await response.json()
       const assistantMessage: StreamMessage = {
         role: 'assistant',
-        content: data.content || 'No response received'
+        content: response || 'No response received'
       }
       setMessages(prev => [...prev, assistantMessage])
     } catch (err) {

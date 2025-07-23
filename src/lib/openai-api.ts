@@ -29,10 +29,11 @@ interface OpenAIResponse {
 }
 
 export async function streamOpenAIResponse(request: OpenAIRequest): Promise<ReadableStream> {
-  const apiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
-  
+  // 🔥 VITE FIX: Use Vite environment variables
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
+
   if (!apiKey) {
-    throw new Error('OpenAI API key not found. Please set OPENAI_API_KEY or NEXT_PUBLIC_OPENAI_API_KEY environment variable.');
+    throw new Error('OpenAI API key not found. Please set VITE_OPENAI_API_KEY environment variable.');
   }
 
   console.log(`🤖 OpenAI API Request: ${request.model} with ${request.messages.length} messages`);
@@ -59,10 +60,11 @@ export async function streamOpenAIResponse(request: OpenAIRequest): Promise<Read
 }
 
 export async function callOpenAI(request: OpenAIRequest): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
-  
+  // 🔥 VITE FIX: Use Vite environment variables
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
+
   if (!apiKey) {
-    throw new Error('OpenAI API key not found. Please set OPENAI_API_KEY or NEXT_PUBLIC_OPENAI_API_KEY environment variable.');
+    throw new Error('OpenAI API key not found. Please set VITE_OPENAI_API_KEY environment variable.');
   }
 
   console.log(`🤖 OpenAI API Call: ${request.model} with ${request.messages.length} messages`);
@@ -87,15 +89,16 @@ export async function callOpenAI(request: OpenAIRequest): Promise<string> {
 
   const data: OpenAIResponse = await response.json();
   const content = data.choices[0]?.message?.content || '';
-  
+
   console.log(`✅ OpenAI Response: ${content.length} characters, ${data.usage.total_tokens} tokens`);
-  
+
   return content;
 }
 
 export async function getOpenAIModels(): Promise<string[]> {
-  const apiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
-  
+  // 🔥 VITE FIX: Use Vite environment variables
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
+
   if (!apiKey) {
     console.warn('⚠️ OpenAI API key not found');
     return [];
@@ -140,7 +143,7 @@ export function getOpenAIModelName(model: string): string {
 // Default OpenAI models for M.I.C. system
 export const DEFAULT_OPENAI_MODELS = [
   'openai:gpt-4o',
-  'openai:gpt-4o-mini', 
+  'openai:gpt-4o-mini',
   'openai:gpt-4-turbo',
   'openai:gpt-3.5-turbo'
 ];

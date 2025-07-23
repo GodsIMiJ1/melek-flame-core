@@ -6,7 +6,7 @@ import path from "path";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
+    port: 8083, // Changed from 8080 to match your setup
   },
   plugins: [
     react(),
@@ -15,5 +15,12 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  build: {
+    sourcemap: mode === 'development', // Only generate source maps in dev
+  },
+  // Fix source map issues
+  define: {
+    global: 'globalThis',
   },
 }));

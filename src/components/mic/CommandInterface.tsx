@@ -87,6 +87,9 @@ export const CommandInterface = () => {
       } else {
         setAvailableModels(models);
       }
+    }).catch(() => {
+      // Fallback to default models if API call fails
+      setAvailableModels(DEFAULT_OPENAI_MODELS);
     });
   }, []);
 
@@ -149,7 +152,11 @@ export const CommandInterface = () => {
         agent: agent.name,
         deviceId
       }];
-      saveChatHistory(deviceId, newHistory);
+      try {
+        saveChatHistory(deviceId, newHistory);
+      } catch (error) {
+        console.warn('Failed to save chat history:', error);
+      }
       return newHistory;
     });
 
@@ -167,7 +174,11 @@ export const CommandInterface = () => {
           agent: 'SYSTEM',
           deviceId
         }];
-        saveChatHistory(deviceId, newHistory);
+        try {
+          saveChatHistory(deviceId, newHistory);
+        } catch (error) {
+          console.warn('Failed to save chat history:', error);
+        }
         return newHistory;
       });
     }
