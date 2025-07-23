@@ -247,11 +247,11 @@ export const CommandInterface = () => {
     });
 
     try {
-      // Test Ollama connection first
+      // Test OpenAI connection first
       setHistory(prev => {
         const newHistory = [...prev, {
           type: 'system' as const,
-          text: '🔗 Testing Ollama connection at 127.0.0.1:11434...',
+          text: '🔗 Testing OpenAI API connection...',
           timestamp: new Date().toLocaleTimeString(),
           agent: 'FLAME_ENGINE',
           deviceId
@@ -260,9 +260,9 @@ export const CommandInterface = () => {
         return newHistory;
       });
 
-      const models = await getOllamaModels();
+      const models = await getOpenAIModels();
       if (models.length === 0) {
-        throw new Error("No Ollama models found. Please ensure Ollama is running on 127.0.0.1:11434");
+        throw new Error("No OpenAI models found. Please ensure VITE_OPENAI_API_KEY is set");
       }
 
       setHistory(prev => {
@@ -423,12 +423,12 @@ export const CommandInterface = () => {
           ))}
 
           {/* Show streaming response */}
-          {loading && response && (
+          {isLoading && (
             <div className={`p-3 rounded border-l-4 ${getAgentColor(selectedAgent)} animate-pulse`}>
               <div className="text-xs opacity-60 mb-1">
-                [{new Date().toLocaleTimeString()}] {selectedAgent} • STREAMING...
+                [{new Date().toLocaleTimeString()}] {selectedAgent} • PROCESSING...
               </div>
-              <div className="text-sm whitespace-pre-wrap">{response}</div>
+              <div className="text-sm whitespace-pre-wrap">🤖 Thinking...</div>
             </div>
           )}
 
