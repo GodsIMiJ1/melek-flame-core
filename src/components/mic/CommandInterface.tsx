@@ -51,10 +51,22 @@ const loadChatHistory = (deviceId: string): any[] => {
 
 export const CommandInterface = () => {
   const [input, setInput] = useState("");
-  const [selectedAgent, setSelectedAgent] = useState(agents[0].name);
+  const [selectedAgent, setSelectedAgent] = useState(agents[0]?.name || "Nexus");
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [deviceId] = useState(() => getDeviceId());
-  const [history, setHistory] = useState<Array<{type: 'command' | 'response' | 'system', text: string, timestamp: string, agent?: string, deviceId?: string}>>(() => loadChatHistory(getDeviceId()));
+  const [history, setHistory] = useState<Array<{type: 'command' | 'response' | 'system', text: string, timestamp: string, agent?: string, deviceId?: string}>>(() => {
+    try {
+      return loadChatHistory(getDeviceId());
+    } catch (error) {
+      console.warn('Failed to load chat history:', error);
+      return [{
+        type: 'system',
+        text: '🛡️ M.I.C. Core Online. Sacred law protocols active. Awaiting divine command...',
+        timestamp: new Date().toLocaleTimeString(),
+        deviceId: getDeviceId()
+      }];
+    }
+  });
   const [flameEngine] = useState(() => new FlameLoopEngine());
   const [isFlameRunning, setIsFlameRunning] = useState(false);
 
@@ -146,10 +158,11 @@ export const CommandInterface = () => {
       await sendMessage(input, agent.model);
     } catch (err) {
       const errorTimestamp = new Date().toLocaleTimeString();
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setHistory(prev => {
         const newHistory = [...prev, {
           type: 'response' as const,
-          text: `❌ Error: ${error || 'Failed to connect to OpenAI. Check your API key and internet connection.'}`,
+          text: `❌ Error: ${errorMessage}`,
           timestamp: errorTimestamp,
           agent: 'SYSTEM',
           deviceId

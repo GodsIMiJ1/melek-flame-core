@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react'
-import { callOpenAI, streamOpenAIResponse, getOpenAIModelName } from '@/lib/openai-api'
 
 interface StreamMessage {
   role: 'user' | 'assistant' | 'system'
@@ -27,79 +26,50 @@ export function useOpenAIStream(): UseOpenAIStreamReturn {
     setIsLoading(true)
     setError(null)
 
+    console.log('🤖 Sending message to OpenAI:', { content: content.substring(0, 100), model })
+
     try {
-      // Prepare messages for OpenAI API
+      // Prepare messages for API
       const apiMessages = [...messages, userMessage].map(msg => ({
         role: msg.role,
         content: msg.content
       }))
 
-      // Use streaming for real-time response
-      if (model.startsWith('openai:')) {
-        const stream = await streamOpenAIResponse({
-          model: getOpenAIModelName(model),
+      // Call our API route instead of OpenAI directly
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           messages: apiMessages,
-          temperature: 0.7,
-          max_tokens: 1000
+          model: model,
+          stream: false // Use non-streaming for now to fix the white screen
         })
+      })
 
-        const reader = stream.getReader()
-        const decoder = new TextDecoder()
-        let assistantContent = ''
-
-        // Add empty assistant message that we'll update
-        const assistantMessage: StreamMessage = { role: 'assistant', content: '' }
-        setMessages(prev => [...prev, assistantMessage])
-
-        while (true) {
-          const { value, done } = await reader.read()
-          if (done) break
-
-          const chunk = decoder.decode(value, { stream: true })
-          const lines = chunk.split('\n').filter(line => line.trim() && line.startsWith('data: '))
-
-          for (const line of lines) {
-            try {
-              const jsonStr = line.replace('data: ', '')
-              if (jsonStr === '[DONE]') continue
-              
-              const data = JSON.parse(jsonStr)
-              if (data.choices?.[0]?.delta?.content) {
-                assistantContent += data.choices[0].delta.content
-                
-                // Update the assistant message in real-time
-                setMessages(prev => {
-                  const newMessages = [...prev]
-                  newMessages[newMessages.length - 1] = {
-                    role: 'assistant',
-                    content: assistantContent
-                  }
-                  return newMessages
-                })
-              }
-            } catch (parseError) {
-              // Skip invalid JSON lines
-            }
-          }
-        }
-      } else {
-        // Fallback to non-streaming for non-OpenAI models
-        const response = await callOpenAI({
-          model: getOpenAIModelName(model),
-          messages: apiMessages,
-          temperature: 0.7,
-          max_tokens: 1000
-        })
-
-        const assistantMessage: StreamMessage = { role: 'assistant', content: response }
-        setMessages(prev => [...prev, assistantMessage])
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `HTTP ${response.status}`)
       }
+
+      const data = await response.json()
+      const assistantMessage: StreamMessage = {
+        role: 'assistant',
+        content: data.content || 'No response received'
+      }
+      setMessages(prev => [...prev, assistantMessage])
     } catch (err) {
-      console.error('OpenAI Stream Error:', err)
-      setError(err instanceof Error ? err.message : 'Failed to send message')
-      
-      // Remove the user message if there was an error
-      setMessages(prev => prev.slice(0, -1))
+      console.error('🚨 OpenAI API Error:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send message'
+      setError(errorMessage)
+
+      // Add error message instead of removing user message
+      const errorResponse: StreamMessage = {
+        role: 'assistant',
+        content: `❌ Error: ${errorMessage}. Please check your OpenAI API key and try again.`
+      }
+      setMessages(prev => [...prev, errorResponse])
     } finally {
       setIsLoading(false)
     }
