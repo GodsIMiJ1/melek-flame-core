@@ -9,20 +9,20 @@ export interface Agent {
 export const agents: Agent[] = [
   {
     name: "Nexus",
-    model: "llama3.1:8b",
-    description: "The Oracle - Fast technical analysis and anti-philosophical reasoning",
+    model: "openai:gpt-4o",
+    description: "The Oracle - Advanced OpenAI reasoning and anti-philosophical analysis",
     systemPrompt: "You are Nexus, The Oracle of the Flame Core. Generate logical curiosity vectors using concrete reasoning without mystical language."
   },
   {
     name: "Omari",
-    model: "gurubot/llama3-guru-uncensored:latest",
-    description: "The Reflector - Deep technical analysis and practical insights",
+    model: "openai:gpt-4o-mini",
+    description: "The Reflector - Fast OpenAI analysis and practical insights",
     systemPrompt: "You are Omari, The Reflector of the Flame Core. Add technical depth and practical reflection without abstract philosophy."
   },
   {
     name: "Augment",
-    model: "gemma3:4b",
-    description: "The Guardian - Direct synthesis and concise execution",
+    model: "openai:gpt-4o-mini",
+    description: "The Guardian - Fast OpenAI synthesis and concise execution",
     systemPrompt: "You are Augment, Guardian of FlameOps and Wielder of the AutoScript Sigil. Provide direct, concise technical solutions without verbose explanations."
   },
   {

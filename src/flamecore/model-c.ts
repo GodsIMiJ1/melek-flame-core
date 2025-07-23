@@ -1,10 +1,10 @@
 
-import { streamOllamaResponse } from "@/lib/ollama-api"
+import { callOpenAI, getOpenAIModelName } from "@/lib/openai-api"
 import { ExecutorResult, ModelResponse } from "./types"
 import { AgentController } from "./agent-controller"
 
 export class ModelC {
-  private model = "gemma3:4b" // Nexus - Direct Synthesis (Anti-Verbose)
+  private model = "openai:gpt-4o-mini" // Executor - Fast OpenAI Synthesis (Anti-Verbose)
   private agentController = new AgentController()
 
   async execute(reflectorOutput: string): Promise<ExecutorResult> {
@@ -37,33 +37,13 @@ export class ModelC {
     ]
 
     try {
-      const stream = await streamOllamaResponse({
-        model: this.model,
-        messages
+      // 🤖 USING OPENAI API FOR ENHANCED EXECUTION
+      const fullResponse = await callOpenAI({
+        model: getOpenAIModelName(this.model),
+        messages,
+        temperature: 0.3, // Lower temperature for more consistent JSON output
+        max_tokens: 500
       })
-
-      const reader = stream.getReader()
-      const decoder = new TextDecoder("utf-8")
-      let fullResponse = ""
-
-      while (true) {
-        const { value, done } = await reader.read()
-        if (done) break
-
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n').filter(line => line.trim())
-
-        for (const line of lines) {
-          try {
-            const data = JSON.parse(line)
-            if (data.message?.content) {
-              fullResponse += data.message.content
-            }
-          } catch (parseError) {
-            // Skip invalid JSON lines
-          }
-        }
-      }
 
       console.log("⚔️ EXECUTOR OUTPUT:", fullResponse)
 

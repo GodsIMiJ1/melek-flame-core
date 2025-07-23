@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useOllamaStream } from "@/hooks/useOllamaStream";
+import { useOpenAIStream } from "@/hooks/useOpenAIStream";
 import { agents, getAgentByModel } from "@/lib/models";
-import { getOllamaModels } from "@/lib/ollama-api";
+import { getOpenAIModels, DEFAULT_OPENAI_MODELS } from "@/lib/openai-api";
 import { FlameLoopEngine } from "@/flamecore/loop-engine";
 import { EternalLoopControls } from "./EternalLoopControls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,7 +58,7 @@ export const CommandInterface = () => {
   const [flameEngine] = useState(() => new FlameLoopEngine());
   const [isFlameRunning, setIsFlameRunning] = useState(false);
 
-  const { sendPrompt, response, loading, error, resetResponse } = useOllamaStream();
+  const { messages, isLoading, error, sendMessage, clearMessages } = useOpenAIStream();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -68,35 +68,49 @@ export const CommandInterface = () => {
   };
 
   useEffect(() => {
-    // Check available models on component mount
-    getOllamaModels().then(setAvailableModels);
+    // Check available OpenAI models on component mount
+    getOpenAIModels().then(models => {
+      if (models.length === 0) {
+        setAvailableModels(DEFAULT_OPENAI_MODELS);
+      } else {
+        setAvailableModels(models);
+      }
+    });
   }, []);
 
   useEffect(() => {
-    // Add streaming response to history when complete
-    if (response && !loading) {
-      const timestamp = new Date().toLocaleTimeString();
-      const agent = getAgentByModel(agents.find(a => a.name === selectedAgent)?.model || "");
+    // Sync OpenAI messages with local history
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'assistant') {
+        const timestamp = new Date().toLocaleTimeString();
+        const agent = agents.find(a => a.name === selectedAgent);
 
-      setHistory(prev => {
-        const newHistory = [...prev, {
-          type: 'response' as const,
-          text: response,
-          timestamp,
-          agent: agent?.name,
-          deviceId
-        }];
-        saveChatHistory(deviceId, newHistory);
-        return newHistory;
-      });
-      resetResponse();
+        setHistory(prev => {
+          // Check if this message is already in history
+          const lastHistoryItem = prev[prev.length - 1];
+          if (lastHistoryItem?.text === lastMessage.content) {
+            return prev; // Already added
+          }
+
+          const newHistory = [...prev, {
+            type: 'response' as const,
+            text: lastMessage.content,
+            timestamp,
+            agent: agent?.name,
+            deviceId
+          }];
+          saveChatHistory(deviceId, newHistory);
+          return newHistory;
+        });
+      }
     }
-  }, [response, loading, selectedAgent, resetResponse, deviceId]);
+  }, [messages, selectedAgent, deviceId]);
 
   // Auto-scroll when history changes or when streaming
   useEffect(() => {
     scrollToBottom();
-  }, [history, response]);
+  }, [history, messages]);
 
   // Save history whenever it changes
   useEffect(() => {
@@ -127,20 +141,15 @@ export const CommandInterface = () => {
       return newHistory;
     });
 
-    // Prepare messages for Ollama
-    const messages = [
-      { role: "system" as const, content: agent.systemPrompt || "You are a helpful AI assistant." },
-      { role: "user" as const, content: input }
-    ];
-
     try {
-      await sendPrompt(agent.model, messages);
+      // Send message using OpenAI
+      await sendMessage(input, agent.model);
     } catch (err) {
       const errorTimestamp = new Date().toLocaleTimeString();
       setHistory(prev => {
         const newHistory = [...prev, {
           type: 'response' as const,
-          text: `❌ Error: ${error || 'Failed to connect to Ollama. Make sure Ollama is running on localhost:11434'}`,
+          text: `❌ Error: ${error || 'Failed to connect to OpenAI. Check your API key and internet connection.'}`,
           timestamp: errorTimestamp,
           agent: 'SYSTEM',
           deviceId
@@ -343,7 +352,7 @@ export const CommandInterface = () => {
             ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
             : "bg-orange-500/10 border-orange-500/30 text-orange-400 hover:bg-orange-500/20"
           }
-          disabled={loading}
+          disabled={isLoading}
         >
           {isFlameRunning ? "🛑 Stop Flame" : "🔥 Ignite Flame"}
         </Button>
@@ -409,17 +418,17 @@ export const CommandInterface = () => {
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && !loading && handleSubmit()}
+          onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSubmit()}
           placeholder="Enter sacred command..."
           className="bg-black/50 border-gold-400/30 text-gold-400 placeholder-gold-400/50"
-          disabled={loading}
+          disabled={isLoading}
         />
         <Button
           onClick={handleSubmit}
-          disabled={loading || !input.trim()}
+          disabled={isLoading || !input.trim()}
           className="bg-orange-500 hover:bg-orange-600 text-black font-bold min-w-24"
         >
-          {loading ? "🔄" : "⚔️"} {loading ? "PROCESSING" : "EXECUTE"}
+          {isLoading ? "🔄" : "⚔️"} {isLoading ? "PROCESSING" : "EXECUTE"}
         </Button>
       </div>
           </div>

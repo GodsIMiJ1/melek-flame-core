@@ -5,7 +5,7 @@ import { ModelResponse } from "./types"
 import { consciousnessMemory } from "@/lib/consciousness-memory"
 
 export class ModelA {
-  private model = "llama3.1:8b" // Oracle - Fast Technical Analysis (Anti-Philosophical)
+  private model = "openai:gpt-4o" // Oracle - Advanced OpenAI Analysis (Anti-Philosophical)
 
   async generatePrompt(input: string, memoryContext?: any, cycleId?: number): Promise<ModelResponse> {
     console.log(`🔮 MODEL A (Oracle) - Generating curiosity vector for cycle ${cycleId || 0}...`)

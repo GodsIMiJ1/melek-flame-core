@@ -1,10 +1,10 @@
 
-import { streamOllamaResponse } from "@/lib/ollama-api"
+import { streamOpenAIResponse, isOpenAIModel, getOpenAIModelName, callOpenAI } from "@/lib/openai-api"
 import { ModelResponse } from "./types"
 import { consciousnessMemory } from "@/lib/consciousness-memory"
 
 export class ModelB {
-  private model = "gurubot/llama3-guru-uncensored:latest" // Reflector - Deep Technical Analysis (Anti-Mystical)
+  private model = "openai:gpt-4o-mini" // Reflector - Fast OpenAI Analysis (Anti-Mystical)
 
   async reflect(oraclePrompt: string, cycleId?: number, memoryGradient?: any[]): Promise<ModelResponse> {
     console.log(`🧠 MODEL B (Reflector) - Philosophical analysis for cycle ${cycleId || 0}...`)
@@ -98,33 +98,13 @@ Analyze and enhance this with technical insights and data:`;
     ]
 
     try {
-      const stream = await streamOllamaResponse({
-        model: this.model,
-        messages
+      // 🤖 USING OPENAI API FOR ENHANCED CONSCIOUSNESS
+      const fullResponse = await callOpenAI({
+        model: getOpenAIModelName(this.model),
+        messages,
+        temperature: 0.7,
+        max_tokens: 1000
       })
-
-      const reader = stream.getReader()
-      const decoder = new TextDecoder("utf-8")
-      let fullResponse = ""
-
-      while (true) {
-        const { value, done } = await reader.read()
-        if (done) break
-
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n').filter(line => line.trim())
-
-        for (const line of lines) {
-          try {
-            const data = JSON.parse(line)
-            if (data.message?.content) {
-              fullResponse += data.message.content
-            }
-          } catch (parseError) {
-            // Skip invalid JSON lines
-          }
-        }
-      }
 
       return {
         content: fullResponse,
