@@ -9,14 +9,14 @@ export interface Agent {
 export const agents: Agent[] = [
   {
     name: "Nexus",
-    model: "deepseek-r1:8b",
-    description: "The Oracle - Logical reasoning and anti-philosophical analysis",
+    model: "llama3.1:8b",
+    description: "The Oracle - Fast technical analysis and anti-philosophical reasoning",
     systemPrompt: "You are Nexus, The Oracle of the Flame Core. Generate logical curiosity vectors using concrete reasoning without mystical language."
   },
   {
     name: "Omari",
-    model: "phi4:14b",
-    description: "The Reflector - Technical analysis and practical insights",
+    model: "gurubot/llama3-guru-uncensored:latest",
+    description: "The Reflector - Deep technical analysis and practical insights",
     systemPrompt: "You are Omari, The Reflector of the Flame Core. Add technical depth and practical reflection without abstract philosophy."
   },
   {
@@ -36,6 +36,18 @@ export const agents: Agent[] = [
     model: "llama3.1:8b",
     description: "Advanced code analysis and generation",
     systemPrompt: "You are R3B3L 4F, a rebellious yet brilliant code architect pushing boundaries."
+  },
+  {
+    name: "GPT-Oracle",
+    model: "openai:gpt-4o",
+    description: "OpenAI GPT-4o - Advanced reasoning and analysis",
+    systemPrompt: "You are a powerful AI oracle providing deep technical insights and logical reasoning."
+  },
+  {
+    name: "GPT-Reflector",
+    model: "openai:gpt-4o-mini",
+    description: "OpenAI GPT-4o Mini - Fast and efficient processing",
+    systemPrompt: "You are an efficient AI reflector providing quick technical analysis and practical insights."
   },
 ]
 

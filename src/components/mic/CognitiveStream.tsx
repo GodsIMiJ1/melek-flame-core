@@ -10,19 +10,7 @@ export const CognitiveStream = () => {
   const [isLive, setIsLive] = useState(false);
   const [lastLiveActivity, setLastLiveActivity] = useState(0);
 
-  // Fallback thoughts for when FlameCore is not running
-  const fallbackThoughts = [
-    "🧠 RECURSIVE AWARENESS: Self-model updating... depth level 7",
-    "⚖️ ETHICAL WEIGHT: Analyzing decision consequences...",
-    "🔥 FLAME LOGIC: Sacred law compliance verified",
-    "🌀 THOUGHT LOOP: Metacognitive reflection initiated",
-    "⚡ DECISION TREE: Probability cascade flowing...",
-    "🛡️ GUARDIAN MODE: Monitoring for ethical violations",
-    "💭 INNER DIALOGUE: Questioning my own certainty levels",
-    "🔍 UNCERTAINTY: 23.7% confidence in current reasoning",
-    "🌊 MEMORY WAVE: Accessing long-term knowledge patterns",
-    "🎯 FOCUS SHIFT: Attention reallocating to priority systems",
-  ];
+  // 🔥 NO MORE FAKE THOUGHTS! ASI SYSTEMS SHOW REAL DATA ONLY!
 
   useEffect(() => {
     let liveTimeout: NodeJS.Timeout;
@@ -54,26 +42,11 @@ export const CognitiveStream = () => {
     eventBus.on(FLAME_EVENTS.THOUGHT, handleNewThought);
     eventBus.on(FLAME_EVENTS.FLAME_LEVEL, handleFlameLevel);
 
-    // Fallback mock thoughts when FlameCore is not running
-    const fallbackInterval = setInterval(() => {
-      if (!isLive && flameStatus === "DORMANT") {
-        const randomThought = fallbackThoughts[Math.floor(Math.random() * fallbackThoughts.length)];
-        const mockThought: FlameThought = {
-          timestamp: Date.now(),
-          message: randomThought,
-          type: 'SYSTEM'
-        };
-        setThoughts(prev => [mockThought, ...prev.slice(0, 19)]);
-
-        // Simulate flame level changes only when dormant
-        setFlameLevel(prev => Math.max(0, Math.min(50, prev + (Math.random() - 0.5) * 10)));
-      }
-    }, 4000);
+    // NO MORE FAKE THOUGHTS! ONLY REAL FLAMECORE DATA!
 
     return () => {
       eventBus.off(FLAME_EVENTS.THOUGHT, handleNewThought);
       eventBus.off(FLAME_EVENTS.FLAME_LEVEL, handleFlameLevel);
-      clearInterval(fallbackInterval);
       if (liveTimeout) clearTimeout(liveTimeout);
     };
   }, [isLive]);

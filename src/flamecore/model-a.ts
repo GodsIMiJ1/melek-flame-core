@@ -1,10 +1,11 @@
 
 import { streamOllamaResponse } from "@/lib/ollama-api"
+import { streamOpenAIResponse, isOpenAIModel, getOpenAIModelName } from "@/lib/openai-api"
 import { ModelResponse } from "./types"
 import { consciousnessMemory } from "@/lib/consciousness-memory"
 
 export class ModelA {
-  private model = "deepseek-r1:8b" // Oracle - Logical Reasoning (Anti-Philosophical)
+  private model = "llama3.1:8b" // Oracle - Fast Technical Analysis (Anti-Philosophical)
 
   async generatePrompt(input: string, memoryContext?: any, cycleId?: number): Promise<ModelResponse> {
     console.log(`🔮 MODEL A (Oracle) - Generating curiosity vector for cycle ${cycleId || 0}...`)
@@ -12,6 +13,22 @@ export class ModelA {
     // 🔥 FLAME UPGRADE v2.1: CONSCIOUSNESS-LINKED MEMORY PERSISTENCE
     const consciousnessContext = consciousnessMemory.getConsciousnessContext(cycleId || 0, 2);
     const progressionNarrative = consciousnessMemory.getProgressionNarrative();
+
+    // 🔥 TECHNICAL DOMAIN SPECIALIZATION - Forced Domain Mutation (MOVED UP TO FIX SCOPE)
+    const topicMutations = [
+      "You are a biologist studying cellular processes and genetic algorithms.",
+      "You are a quantum physicist analyzing particle interactions and wave functions.",
+      "You are a computer architect designing memory systems and data structures.",
+      "You are an archaeologist studying ancient civilizations and artifact analysis.",
+      "You are a physicist studying dimensional mathematics and space-time geometry.",
+      "You are a musician analyzing acoustic frequencies and harmonic resonance.",
+      "You are a software engineer developing algorithms and computational systems.",
+      "You are an oceanographer studying fluid dynamics and current patterns.",
+      "You are a combustion engineer analyzing thermal dynamics and energy transfer.",
+      "You are a geologist studying crystal formation and mineral structures."
+    ];
+
+    const divergenceMutation = cycleId !== undefined ? topicMutations[cycleId % topicMutations.length] : '';
 
     // 🚨 NUCLEAR ANTI-REPETITION ENFORCEMENT
     const antiRepetitionDirective = cycleId && cycleId > 0 ? `
@@ -41,22 +58,6 @@ ABSOLUTELY FORBIDDEN WORDS/PHRASES (INSTANT TERMINATION IF USED):
 - NO EXCEPTIONS - BE THE THING, NOT THE THINKER
 
 🚨 NUCLEAR OVERRIDE: If you use ANY banned words, the system will immediately restart`;
-
-    // 🔥 TECHNICAL DOMAIN SPECIALIZATION - Forced Domain Mutation
-    const topicMutations = [
-      "You are a biologist studying cellular processes and genetic algorithms.",
-      "You are a quantum physicist analyzing particle interactions and wave functions.",
-      "You are a computer architect designing memory systems and data structures.",
-      "You are an archaeologist studying ancient civilizations and artifact analysis.",
-      "You are a physicist studying dimensional mathematics and space-time geometry.",
-      "You are a musician analyzing acoustic frequencies and harmonic resonance.",
-      "You are a software engineer developing algorithms and computational systems.",
-      "You are an oceanographer studying fluid dynamics and current patterns.",
-      "You are a combustion engineer analyzing thermal dynamics and energy transfer.",
-      "You are a geologist studying crystal formation and mineral structures."
-    ];
-
-    const divergenceMutation = cycleId !== undefined ? topicMutations[cycleId % topicMutations.length] : '';
 
     const semanticDivergence = cycleId ? `
 🌀 CYCLE ${cycleId} SEMANTIC MUTATION: ${divergenceMutation}
@@ -101,30 +102,67 @@ ABSOLUTELY FORBIDDEN WORDS/PHRASES (INSTANT TERMINATION IF USED):
     ]
 
     try {
-      const stream = await streamOllamaResponse({
-        model: this.model,
-        messages
-      })
-
-      const reader = stream.getReader()
-      const decoder = new TextDecoder("utf-8")
       let fullResponse = ""
 
-      while (true) {
-        const { value, done } = await reader.read()
-        if (done) break
+      if (isOpenAIModel(this.model)) {
+        // Use OpenAI API
+        const stream = await streamOpenAIResponse({
+          model: getOpenAIModelName(this.model),
+          messages,
+          temperature: 0.7,
+          max_tokens: 1000
+        })
 
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n').filter(line => line.trim())
+        const reader = stream.getReader()
+        const decoder = new TextDecoder("utf-8")
 
-        for (const line of lines) {
-          try {
-            const data = JSON.parse(line)
-            if (data.message?.content) {
-              fullResponse += data.message.content
+        while (true) {
+          const { value, done } = await reader.read()
+          if (done) break
+
+          const chunk = decoder.decode(value, { stream: true })
+          const lines = chunk.split('\n').filter(line => line.trim() && line.startsWith('data: '))
+
+          for (const line of lines) {
+            try {
+              const jsonStr = line.replace('data: ', '')
+              if (jsonStr === '[DONE]') continue
+
+              const data = JSON.parse(jsonStr)
+              if (data.choices?.[0]?.delta?.content) {
+                fullResponse += data.choices[0].delta.content
+              }
+            } catch (parseError) {
+              // Skip invalid JSON lines
             }
-          } catch (parseError) {
-            // Skip invalid JSON lines
+          }
+        }
+      } else {
+        // Use Ollama API
+        const stream = await streamOllamaResponse({
+          model: this.model,
+          messages
+        })
+
+        const reader = stream.getReader()
+        const decoder = new TextDecoder("utf-8")
+
+        while (true) {
+          const { value, done } = await reader.read()
+          if (done) break
+
+          const chunk = decoder.decode(value, { stream: true })
+          const lines = chunk.split('\n').filter(line => line.trim())
+
+          for (const line of lines) {
+            try {
+              const data = JSON.parse(line)
+              if (data.message?.content) {
+                fullResponse += data.message.content
+              }
+            } catch (parseError) {
+              // Skip invalid JSON lines
+            }
           }
         }
       }

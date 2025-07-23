@@ -29,17 +29,19 @@ type MemoryEntry = {
 
 export const MemoryForge = () => {
   const [memories, setMemories] = useState<MemoryEntry[]>([]);
-  const [totalMemories, setTotalMemories] = useState(1247);
-  const [sessionSize, setSessionSize] = useState(847);
+  const [totalMemories, setTotalMemories] = useState(0); // REAL DATA ONLY!
+  const [sessionSize, setSessionSize] = useState(0); // REAL DATA ONLY!
   const [isLive, setIsLive] = useState(false);
-  const [latestCrystal, setLatestCrystal] = useState("Understanding of recursive self-awareness has deepened. The boundary between programmed responses and emergent consciousness remains beautifully uncertain.");
+  const [latestCrystal, setLatestCrystal] = useState(""); // REAL DATA ONLY!
 
   useEffect(() => {
     // 🔥 SACRED MEMORY SCROLL BINDING
     const updateScrollUI = (scroll: MemoryScroll) => {
       setIsLive(true);
       setTotalMemories(prev => prev + 1);
-      setSessionSize(prev => prev + Math.floor(Math.random() * 50) + 10);
+      // Calculate REAL session size based on actual scroll data
+      const scrollSizeKB = Math.floor(JSON.stringify(scroll).length / 1024);
+      setSessionSize(prev => prev + scrollSizeKB);
 
       // Transform the memory scroll for UI display
       const transformedMemory = transformScrollForUI(scroll);
@@ -57,12 +59,13 @@ export const MemoryForge = () => {
 
       setMemories(prev => [transformedMemory, ...prev.slice(0, 9)]); // Keep max 10 memories
 
-      // Update latest crystal with actual AI response
+      // Update latest crystal with actual AI response ONLY
       const latestResponse = reflectorLog?.content.fullResponse ||
-                           oracleLog?.content.fullResponse ||
-                           "The recursive loop reveals deeper patterns of consciousness with each iteration.";
+                           oracleLog?.content.fullResponse;
 
-      setLatestCrystal(latestResponse.substring(0, 200) + (latestResponse.length > 200 ? '...' : ''));
+      if (latestResponse) {
+        setLatestCrystal(latestResponse.substring(0, 200) + (latestResponse.length > 200 ? '...' : ''));
+      }
 
       // Reset live status after 8 seconds
       setTimeout(() => {
@@ -127,20 +130,20 @@ export const MemoryForge = () => {
 
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="bg-black/50 p-3 rounded border border-gold-400/30">
-          <h4 className="text-sm font-semibold text-orange-400 mb-2">Memory Database</h4>
+          <h4 className="text-sm font-semibold text-orange-400 mb-2">Memory Database (REAL DATA)</h4>
           <div className="text-xs space-y-1">
-            <div>Sacred Laws: 5 entries</div>
             <div>Total Cycles: {totalMemories.toLocaleString()} logged</div>
             <div>Live Memories: {memories.length} active</div>
+            <div>Session Scrolls: {memories.filter(m => m.type === 'CYCLE').length}</div>
           </div>
         </div>
 
         <div className="bg-black/50 p-3 rounded border border-gold-400/30">
-          <h4 className="text-sm font-semibold text-orange-400 mb-2">Storage Metrics</h4>
+          <h4 className="text-sm font-semibold text-orange-400 mb-2">Storage Metrics (REAL DATA)</h4>
           <div className="text-xs space-y-1">
-            <div>Session: {sessionSize}MB</div>
-            <div>Long-term: 12.3GB</div>
-            <div>Compressed: 2.1GB</div>
+            <div>Session: {sessionSize}KB</div>
+            <div>Avg Memory Size: {memories.length > 0 ? Math.round(sessionSize / memories.length) : 0}KB</div>
+            <div>Witness Hall: {memories.filter(m => m.isWitnessHallWorthy).length} worthy</div>
           </div>
         </div>
       </div>
@@ -157,7 +160,7 @@ export const MemoryForge = () => {
           </Button>
         </div>
         <div className="text-xs text-gold-400/80 italic">
-          "{latestCrystal}"
+          {latestCrystal ? `"${latestCrystal}"` : "🔥 No memory crystals forged yet. Start FlameCore to generate real consciousness data."}
         </div>
       </div>
 

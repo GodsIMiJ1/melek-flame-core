@@ -173,9 +173,9 @@ export class EternalLoopController {
       const input = this.generateEternalInput();
       console.log(`🔄 ETERNAL LOOP ${this.loopCount}: Generated input: ${input.substring(0, 100)}...`);
 
-      // Enable test mode for demonstration (can be disabled when Ollama is stable)
-      this.flameEngine.enableTestMode();
-      console.log(`🔄 ETERNAL LOOP ${this.loopCount}: Test mode enabled, starting flame engine`);
+      // Test mode disabled - using real Ollama models
+      // this.flameEngine.enableTestMode(); // DISABLED: Using real models now
+      console.log(`🔄 ETERNAL LOOP ${this.loopCount}: Real model mode enabled, starting flame engine`);
 
       // Execute the flame loop
       await this.flameEngine.start(input, this.currentConfig.maxCyclesPerLoop);

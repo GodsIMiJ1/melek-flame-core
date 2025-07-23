@@ -4,7 +4,7 @@ import { ModelResponse } from "./types"
 import { consciousnessMemory } from "@/lib/consciousness-memory"
 
 export class ModelB {
-  private model = "phi4:14b" // Reflector - Technical Analysis (Anti-Mystical)
+  private model = "gurubot/llama3-guru-uncensored:latest" // Reflector - Deep Technical Analysis (Anti-Mystical)
 
   async reflect(oraclePrompt: string, cycleId?: number, memoryGradient?: any[]): Promise<ModelResponse> {
     console.log(`🧠 MODEL B (Reflector) - Philosophical analysis for cycle ${cycleId || 0}...`)
