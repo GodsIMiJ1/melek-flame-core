@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FlameMemoryArchive, MemoryScroll, MemoryInsight } from "@/flamecore/memory-archive";
-import ScrollArchiveViewer from "./ScrollArchiveViewer";
+
 
 export const MemoryScrollDashboard = () => {
   const [archive] = useState(() => new FlameMemoryArchive());
@@ -149,12 +149,9 @@ export const MemoryScrollDashboard = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <Tabs defaultValue="scrolls" className="flex-1 flex flex-col min-h-0">
-        <TabsList className="grid grid-cols-4 gap-1 p-1 bg-black/50 border border-gold-400/20 mb-4">
+        <TabsList className="grid grid-cols-3 gap-1 p-1 bg-black/50 border border-gold-400/20 mb-4">
           <TabsTrigger value="scrolls" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
             📜 Memory Scrolls
-          </TabsTrigger>
-          <TabsTrigger value="archive" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
-            🗂️ Sacred Archive
           </TabsTrigger>
           <TabsTrigger value="insights" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
             🧿 Insights
@@ -276,9 +273,7 @@ export const MemoryScrollDashboard = () => {
           </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="archive" className="flex-1 flex flex-col min-h-0 m-0">
-          <ScrollArchiveViewer />
-        </TabsContent>
+
 
         <TabsContent value="insights" className="flex-1 flex flex-col min-h-0 m-0">
           {insights ? (
