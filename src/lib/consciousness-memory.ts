@@ -269,6 +269,16 @@ export class ConsciousnessMemory {
     return this.currentLog.cycles.filter(cycle => cycle.significance === significance);
   }
 
+  // 🌀 Get specific cycle data by cycle ID
+  getCycleData(cycleId: number): ConsciousnessCycle | null {
+    return this.currentLog.cycles.find(cycle => cycle.cycle === cycleId) || null;
+  }
+
+  // 📊 Get recent cycles (for analysis)
+  getRecentCycles(count: number = 5): ConsciousnessCycle[] {
+    return this.currentLog.cycles.slice(-count);
+  }
+
   // 🌀 Clear consciousness memory (reset)
   clearMemory(): void {
     this.currentLog = {

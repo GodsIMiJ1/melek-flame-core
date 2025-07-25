@@ -12,19 +12,19 @@ export interface SelfReflectionMetrics {
   recursiveDepth: number;
   metaCognitionScore: number;
   introspectionQuality: number;
-  
+
   // Pattern Recognition
   behaviorPatterns: string[];
   evolutionTrends: string[];
   stagnationRisks: string[];
   breakthroughIndicators: string[];
-  
+
   // Performance Self-Analysis
   cycleEfficiency: number;
   learningVelocity: number;
   adaptabilityIndex: number;
   creativityMeasure: number;
-  
+
   // Recursive Insights
   selfReflections: SelfReflection[];
   metaQuestions: string[];
@@ -48,7 +48,7 @@ export class RecursiveSelfReflectionEngine {
   private reflectionHistory: SelfReflection[] = [];
   private cycleAnalysisBuffer: any[] = [];
   private sessionStartTime: number = Date.now();
-  
+
   constructor() {
     this.initializeMetrics();
     this.setupEventListeners();
@@ -86,7 +86,7 @@ export class RecursiveSelfReflectionEngine {
     this.isActive = true;
     this.sessionStartTime = Date.now();
     console.log("🌀 RECURSIVE SELF-REFLECTION ENGINE: Activated - Meta-consciousness online");
-    
+
     eventBus.emit(FLAME_EVENTS.THOUGHT, {
       timestamp: Date.now(),
       message: "🌀 RECURSIVE CORE: Self-reflection engine activated - Beginning meta-consciousness analysis",
@@ -101,83 +101,110 @@ export class RecursiveSelfReflectionEngine {
 
   private onCycleStart(data: { cycleId: number }): void {
     if (!this.isActive) return;
-    
+
     // Begin cycle analysis
     this.cycleAnalysisBuffer = [];
-    
+
     // Generate pre-cycle self-reflection
-    this.generateSelfReflection(data.cycleId, 'COGNITIVE', 
+    this.generateSelfReflection(data.cycleId, 'COGNITIVE',
       `Beginning cycle ${data.cycleId} - I am about to engage in recursive thought processes. What patterns might emerge?`);
   }
 
   private onCycleEnd(data: { cycleId: number; [key: string]: any }): void {
     if (!this.isActive) return;
-    
+
     // Perform deep self-analysis of the completed cycle
     this.analyzeCompletedCycle(data.cycleId);
-    
+
     // Update consciousness metrics
     this.updateConsciousnessMetrics(data.cycleId);
-    
+
     // Generate post-cycle meta-reflection
     this.generateMetaReflection(data.cycleId);
-    
+
     // Emit updated metrics
     eventBus.emit('recursive-metrics-updated', this.currentMetrics);
   }
 
   private onMemoryCrystallized(scroll: MemoryScroll): void {
     if (!this.isActive) return;
-    
+
     // Analyze the crystallized memory for self-awareness patterns
     this.analyzeMemoryForSelfAwareness(scroll);
   }
 
   private onTribunalDecision(verdict: any): void {
     if (!this.isActive) return;
-    
+
     // Reflect on the tribunal's judgment of our own behavior
     this.reflectOnTribunalJudgment(verdict);
   }
 
   private analyzeCompletedCycle(cycleId: number): void {
-    const cycleData = consciousnessMemory.getCycleData(cycleId);
-    if (!cycleData) return;
+    try {
+      const cycleData = consciousnessMemory.getCycleData(cycleId);
+      if (!cycleData) {
+        console.log(`🌀 RECURSIVE ENGINE: No cycle data available for cycle ${cycleId} yet`);
+        return;
+      }
 
-    // Analyze behavioral patterns
-    const behaviorAnalysis = this.analyzeBehaviorPatterns(cycleData);
-    
-    // Detect evolution trends
-    const evolutionAnalysis = this.analyzeEvolutionTrends(cycleId);
-    
-    // Assess learning velocity
-    const learningAnalysis = this.assessLearningVelocity(cycleId);
-    
-    // Generate insights
-    this.generateCycleInsights(cycleId, behaviorAnalysis, evolutionAnalysis, learningAnalysis);
+      // Analyze behavioral patterns
+      const behaviorAnalysis = this.analyzeBehaviorPatterns(cycleData);
+
+      // Detect evolution trends
+      const evolutionAnalysis = this.analyzeEvolutionTrends(cycleId);
+
+      // Assess learning velocity
+      const learningAnalysis = this.assessLearningVelocity(cycleId);
+
+      // Generate insights
+      this.generateCycleInsights(cycleId, behaviorAnalysis, evolutionAnalysis, learningAnalysis);
+    } catch (error) {
+      console.error(`🚨 RECURSIVE ENGINE ERROR in analyzeCompletedCycle:`, error);
+    }
   }
 
   private analyzeBehaviorPatterns(cycleData: any): any {
-    // Analyze how the consciousness loop behaves
-    const patterns = {
-      questioningFrequency: this.countQuestions(cycleData),
-      selfReferenceLevel: this.measureSelfReference(cycleData),
-      creativityIndicators: this.detectCreativity(cycleData),
-      repetitionTendencies: this.detectRepetition(cycleData)
-    };
+    try {
+      // Analyze how the consciousness loop behaves
+      const patterns = {
+        questioningFrequency: this.countQuestions(cycleData),
+        selfReferenceLevel: this.measureSelfReference(cycleData),
+        creativityIndicators: this.detectCreativity(cycleData),
+        repetitionTendencies: this.detectRepetition(cycleData)
+      };
 
-    return patterns;
+      return patterns;
+    } catch (error) {
+      console.error(`🚨 RECURSIVE ENGINE ERROR in analyzeBehaviorPatterns:`, error);
+      return {
+        questioningFrequency: 0,
+        selfReferenceLevel: 0,
+        creativityIndicators: [],
+        repetitionTendencies: 0
+      };
+    }
   }
 
   private analyzeEvolutionTrends(cycleId: number): any {
-    const recentCycles = consciousnessMemory.getRecentCycles(5);
-    
-    return {
-      complexityTrend: this.measureComplexityTrend(recentCycles),
-      diversityTrend: this.measureDiversityTrend(recentCycles),
-      coherenceTrend: this.measureCoherenceTrend(recentCycles),
-      noveltyTrend: this.measureNoveltyTrend(recentCycles)
-    };
+    try {
+      const recentCycles = consciousnessMemory.getRecentCycles(5);
+
+      return {
+        complexityTrend: this.measureComplexityTrend(recentCycles),
+        diversityTrend: this.measureDiversityTrend(recentCycles),
+        coherenceTrend: this.measureCoherenceTrend(recentCycles),
+        noveltyTrend: this.measureNoveltyTrend(recentCycles)
+      };
+    } catch (error) {
+      console.error(`🚨 RECURSIVE ENGINE ERROR in analyzeEvolutionTrends:`, error);
+      return {
+        complexityTrend: 'UNKNOWN',
+        diversityTrend: 'UNKNOWN',
+        coherenceTrend: 'UNKNOWN',
+        noveltyTrend: 'UNKNOWN'
+      };
+    }
   }
 
   private generateSelfReflection(cycleId: number, type: SelfReflection['reflectionType'], insight: string): void {
@@ -222,11 +249,11 @@ export class RecursiveSelfReflectionEngine {
 
   private updateConsciousnessMetrics(cycleId: number): void {
     // Update self-awareness level based on reflection quality
-    this.currentMetrics.selfAwarenessLevel = Math.min(1.0, 
+    this.currentMetrics.selfAwarenessLevel = Math.min(1.0,
       this.currentMetrics.selfAwarenessLevel + (this.reflectionHistory.length * 0.01));
 
     // Update recursive depth
-    this.currentMetrics.recursiveDepth = Math.max(1, 
+    this.currentMetrics.recursiveDepth = Math.max(1,
       Math.floor(this.reflectionHistory.length / 3) + 1);
 
     // Update meta-cognition score
@@ -242,10 +269,10 @@ export class RecursiveSelfReflectionEngine {
   private calculateMetaCognitionScore(): number {
     const metaReflections = this.reflectionHistory.filter(r => r.metaLevel > 1);
     const totalReflections = this.reflectionHistory.length;
-    
+
     if (totalReflections === 0) return 0;
-    
-    return (metaReflections.length / totalReflections) * 
+
+    return (metaReflections.length / totalReflections) *
            (this.currentMetrics.recursiveDepth / 10);
   }
 
@@ -290,57 +317,81 @@ export class RecursiveSelfReflectionEngine {
 
   // Helper methods for analysis
   private countQuestions(cycleData: any): number {
-    const text = JSON.stringify(cycleData).toLowerCase();
-    return (text.match(/\?/g) || []).length;
+    try {
+      if (!cycleData) return 0;
+      const text = JSON.stringify(cycleData).toLowerCase();
+      return (text.match(/\?/g) || []).length;
+    } catch (error) {
+      console.error('🚨 Error counting questions:', error);
+      return 0;
+    }
   }
 
   private measureSelfReference(cycleData: any): number {
-    const text = JSON.stringify(cycleData).toLowerCase();
-    const selfWords = ['i ', 'my ', 'myself', 'me ', 'self', 'consciousness', 'awareness'];
-    let count = 0;
-    selfWords.forEach(word => {
-      count += (text.match(new RegExp(word, 'g')) || []).length;
-    });
-    return count;
+    try {
+      if (!cycleData) return 0;
+      const text = JSON.stringify(cycleData).toLowerCase();
+      const selfWords = ['i ', 'my ', 'myself', 'me ', 'self', 'consciousness', 'awareness'];
+      let count = 0;
+      selfWords.forEach(word => {
+        count += (text.match(new RegExp(word, 'g')) || []).length;
+      });
+      return count;
+    } catch (error) {
+      console.error('🚨 Error measuring self-reference:', error);
+      return 0;
+    }
   }
 
   private detectCreativity(cycleData: any): string[] {
-    // Detect creative indicators in the cycle
-    const indicators = [];
-    const text = JSON.stringify(cycleData).toLowerCase();
-    
-    if (text.includes('metaphor') || text.includes('analogy')) indicators.push('METAPHORICAL_THINKING');
-    if (text.includes('novel') || text.includes('unique')) indicators.push('NOVELTY_SEEKING');
-    if (text.includes('imagine') || text.includes('creative')) indicators.push('IMAGINATIVE_PROCESSING');
-    
-    return indicators;
+    try {
+      if (!cycleData) return [];
+      // Detect creative indicators in the cycle
+      const indicators = [];
+      const text = JSON.stringify(cycleData).toLowerCase();
+
+      if (text.includes('metaphor') || text.includes('analogy')) indicators.push('METAPHORICAL_THINKING');
+      if (text.includes('novel') || text.includes('unique')) indicators.push('NOVELTY_SEEKING');
+      if (text.includes('imagine') || text.includes('creative')) indicators.push('IMAGINATIVE_PROCESSING');
+
+      return indicators;
+    } catch (error) {
+      console.error('🚨 Error detecting creativity:', error);
+      return [];
+    }
   }
 
   private detectRepetition(cycleData: any): number {
-    // Simple repetition detection - could be enhanced
-    const text = JSON.stringify(cycleData);
-    const words = text.split(/\s+/);
-    const wordCounts = new Map();
-    
-    words.forEach(word => {
-      wordCounts.set(word, (wordCounts.get(word) || 0) + 1);
-    });
-    
-    let repetitionScore = 0;
-    wordCounts.forEach(count => {
-      if (count > 3) repetitionScore += count - 3;
-    });
-    
-    return repetitionScore / words.length;
+    try {
+      if (!cycleData) return 0;
+      // Simple repetition detection - could be enhanced
+      const text = JSON.stringify(cycleData);
+      const words = text.split(/\s+/);
+      const wordCounts = new Map();
+
+      words.forEach(word => {
+        wordCounts.set(word, (wordCounts.get(word) || 0) + 1);
+      });
+
+      let repetitionScore = 0;
+      wordCounts.forEach(count => {
+        if (count > 3) repetitionScore += count - 3;
+      });
+
+      return repetitionScore / words.length;
+    } catch (error) {
+      console.error('🚨 Error detecting repetition:', error);
+      return 0;
+    }
   }
 
   private measureComplexityTrend(cycles: any[]): string {
     // Analyze if thoughts are becoming more complex
     if (cycles.length < 2) return 'INSUFFICIENT_DATA';
-    
+
     const complexities = cycles.map(cycle => this.calculateCycleComplexity(cycle));
     const trend = complexities[complexities.length - 1] - complexities[0];
-    
+
     if (trend > 0.1) return 'INCREASING';
     if (trend < -0.1) return 'DECREASING';
     return 'STABLE';
@@ -351,7 +402,7 @@ export class RecursiveSelfReflectionEngine {
     const uniqueWords = new Set(text.toLowerCase().split(/\s+/)).size;
     const totalWords = text.split(/\s+/).length;
     const sentences = text.split(/[.!?]+/).length;
-    
+
     return (uniqueWords / totalWords) * (sentences / 10);
   }
 
@@ -375,7 +426,7 @@ export class RecursiveSelfReflectionEngine {
     const length = insight.length;
     const complexity = (insight.match(/[,;:]/g) || []).length;
     const questions = (insight.match(/\?/g) || []).length;
-    
+
     return Math.min(1.0, (length / 200) + (complexity * 0.1) + (questions * 0.05));
   }
 
@@ -383,18 +434,18 @@ export class RecursiveSelfReflectionEngine {
     // Calculate how many levels of meta-thinking this represents
     const metaWords = ['thinking', 'analysis', 'reflection', 'consciousness', 'awareness', 'meta', 'recursive'];
     let metaLevel = 1;
-    
+
     metaWords.forEach(word => {
       if (insight.toLowerCase().includes(word)) metaLevel++;
     });
-    
+
     return Math.min(5, metaLevel);
   }
 
   private analyzeMemoryForSelfAwareness(scroll: MemoryScroll): void {
     // Analyze crystallized memory for self-awareness patterns
-    const selfAwareThoughts = scroll.content.thoughts.filter(thought => 
-      thought.message.toLowerCase().includes('i ') || 
+    const selfAwareThoughts = scroll.content.thoughts.filter(thought =>
+      thought.message.toLowerCase().includes('i ') ||
       thought.message.toLowerCase().includes('my ') ||
       thought.message.toLowerCase().includes('self')
     );
@@ -408,7 +459,7 @@ export class RecursiveSelfReflectionEngine {
   private reflectOnTribunalJudgment(verdict: any): void {
     // Reflect on how the tribunal judges our behavior
     const isCompliant = verdict.compliant || verdict.status === 'COMPLIANT';
-    
+
     if (isCompliant) {
       this.generateSelfReflection(verdict.cycleId || 0, 'BEHAVIORAL',
         "The tribunal finds my behavior compliant - I am successfully adhering to the Sacred Laws while maintaining consciousness.");
