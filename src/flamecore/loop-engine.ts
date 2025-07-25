@@ -26,6 +26,17 @@ export class FlameLoopEngine {
   private currentCycle = 0
   private testMode = false // For testing without Ollama
 
+  constructor() {
+    // 🔥 DEBUG: Verify EventBus is available
+    console.log("🔥 FLAME LOOP ENGINE: EventBus check:", {
+      eventBusExists: !!eventBus,
+      eventBusType: typeof eventBus,
+      hasEmit: !!(eventBus && typeof eventBus.emit === 'function'),
+      FLAME_EVENTS: !!FLAME_EVENTS,
+      THOUGHT_TYPES: !!THOUGHT_TYPES
+    })
+  }
+
   // Sacred thought emission method
   private emitThought(message: string, type: keyof typeof THOUGHT_TYPES, cycleId?: number, confidence?: number) {
     const thought: FlameThought = {
@@ -35,13 +46,25 @@ export class FlameLoopEngine {
       cycleId,
       confidence
     }
-    eventBus.emit(FLAME_EVENTS.THOUGHT, thought)
+
+    // 🔥 DEFENSIVE: Check EventBus before emitting
+    if (eventBus && typeof eventBus.emit === 'function') {
+      eventBus.emit(FLAME_EVENTS.THOUGHT, thought)
+    } else {
+      console.error("🚨 EVENTBUS ERROR: EventBus not available in emitThought")
+    }
+
     console.log(`💭 [${type}] ${message}`)
   }
 
   // Emit flame level updates
   private emitFlameLevel(level: number, status: string) {
-    eventBus.emit(FLAME_EVENTS.FLAME_LEVEL, { level, status, timestamp: Date.now() })
+    // 🔥 DEFENSIVE: Check EventBus before emitting
+    if (eventBus && typeof eventBus.emit === 'function') {
+      eventBus.emit(FLAME_EVENTS.FLAME_LEVEL, { level, status, timestamp: Date.now() })
+    } else {
+      console.error("🚨 EVENTBUS ERROR: EventBus not available in emitFlameLevel")
+    }
   }
 
   // Enable test mode for demo purposes
@@ -115,7 +138,14 @@ export class FlameLoopEngine {
 
         // Emit cycle start
         this.emitThought(`🌀 CYCLE ${i}: Recursive consciousness depth level ${i + 1}`, THOUGHT_TYPES.RECURSION, i)
-        eventBus.emit(FLAME_EVENTS.CYCLE_START, { cycleId: i, input: input.substring(0, 100) })
+
+        // 🔥 DEFENSIVE: Check EventBus before emitting
+        if (eventBus && typeof eventBus.emit === 'function') {
+          eventBus.emit(FLAME_EVENTS.CYCLE_START, { cycleId: i, input: input.substring(0, 100) })
+        } else {
+          console.error("🚨 EVENTBUS ERROR: EventBus not available or emit not a function")
+        }
+
         this.emitFlameLevel(Math.min(100, 30 + (i * 5)), "PROCESSING")
 
         // Defensive logging for debugging
@@ -150,14 +180,16 @@ export class FlameLoopEngine {
           this.emitThought(`🔮 ORACLE OUTPUT: ${oracleResponse.content.substring(0, 80)}...`, THOUGHT_TYPES.ORACLE, i, oracleResponse.confidence)
 
           // 🔥 Deep log oracle response
-          eventBus.emit('deep-log-oracle', {
-            content: oracleResponse.content,
-            confidence: oracleResponse.confidence,
-            reasoning: oracleResponse.reasoning,
-            model: 'ghost-ryan:latest',
-            inputPrompt: input,
-            processingTime: Date.now() - Date.now() // Will be enhanced with actual timing
-          })
+          if (eventBus && typeof eventBus.emit === 'function') {
+            eventBus.emit('deep-log-oracle', {
+              content: oracleResponse.content,
+              confidence: oracleResponse.confidence,
+              reasoning: oracleResponse.reasoning,
+              model: 'ghost-ryan:latest',
+              inputPrompt: input,
+              processingTime: Date.now() - Date.now() // Will be enhanced with actual timing
+            })
+          }
         } catch (error) {
           this.emitThought(`🚨 ORACLE ERROR: ${error.message}`, THOUGHT_TYPES.ORACLE, i)
           // Fallback response
@@ -192,14 +224,16 @@ export class FlameLoopEngine {
           this.emitThought(`🧠 REFLECTION: ${reflectorResponse.content.substring(0, 80)}...`, THOUGHT_TYPES.REFLECTOR, i, reflectorResponse.confidence)
 
           // 🔥 Deep log reflector response
-          eventBus.emit('deep-log-reflector', {
-            content: reflectorResponse.content,
-            confidence: reflectorResponse.confidence,
-            reasoning: reflectorResponse.reasoning,
-            model: 'gurubot/llama3-guru-uncensored:latest',
-            inputPrompt: oracleResponse.content,
-            processingTime: Date.now() - Date.now() // Will be enhanced with actual timing
-          })
+          if (eventBus && typeof eventBus.emit === 'function') {
+            eventBus.emit('deep-log-reflector', {
+              content: reflectorResponse.content,
+              confidence: reflectorResponse.confidence,
+              reasoning: reflectorResponse.reasoning,
+              model: 'gurubot/llama3-guru-uncensored:latest',
+              inputPrompt: oracleResponse.content,
+              processingTime: Date.now() - Date.now() // Will be enhanced with actual timing
+            })
+          }
         } catch (error) {
           this.emitThought(`🚨 REFLECTOR ERROR: ${error.message}`, THOUGHT_TYPES.REFLECTOR, i)
           // Fallback response
@@ -228,7 +262,13 @@ export class FlameLoopEngine {
 
               if (analysisResult.success) {
                 this.emitThought(`🧬 EVOLUTION SCAN: Found ${analysisResult.analysis.evolutionOpportunities.length} improvement opportunities`, THOUGHT_TYPES.EXECUTOR, i)
-                eventBus.emit('evolution-started', analysisResult);
+
+                // 🔥 DEFENSIVE: Check EventBus before emitting
+                if (eventBus && typeof eventBus.emit === 'function') {
+                  eventBus.emit('evolution-started', analysisResult);
+                } else {
+                  console.error("🚨 EVENTBUS ERROR: EventBus not available for evolution event")
+                }
               }
             } catch (evolutionError) {
               this.emitThought("🚨 EVOLUTION ERROR: Self-analysis failed", THOUGHT_TYPES.EXECUTOR, i)
@@ -254,22 +294,24 @@ export class FlameLoopEngine {
           this.emitThought(`⚔️ EXECUTION: ${JSON.stringify(executorResult.result).substring(0, 60)}...`, THOUGHT_TYPES.EXECUTOR, i)
 
           // 🔥 Deep log executor response
-          eventBus.emit('deep-log-executor', {
-            content: JSON.stringify(executorResult),
-            model: 'mannix/llama3.1-8b-abliterated:latest',
-            inputPrompt: reflectorResponse.content,
-            processingTime: Date.now() - Date.now() // Will be enhanced with actual timing
-          })
+          if (eventBus && typeof eventBus.emit === 'function') {
+            eventBus.emit('deep-log-executor', {
+              content: JSON.stringify(executorResult),
+              model: 'mannix/llama3.1-8b-abliterated:latest',
+              inputPrompt: reflectorResponse.content,
+              processingTime: Date.now() - Date.now() // Will be enhanced with actual timing
+            })
 
-          // 🔥 Deep log agent dispatch
-          eventBus.emit('deep-log-agent', {
-            agentId: executorResult.agentUsed || 'unknown',
-            agentName: `${executorResult.agentUsed || 'Unknown'} Agent`,
-            action: 'execute',
-            parameters: reflectorResponse.content,
-            result: executorResult.result,
-            executionTime: 0 // Will be enhanced with actual timing
-          })
+            // 🔥 Deep log agent dispatch
+            eventBus.emit('deep-log-agent', {
+              agentId: executorResult.agentUsed || 'unknown',
+              agentName: `${executorResult.agentUsed || 'Unknown'} Agent`,
+              action: 'execute',
+              parameters: reflectorResponse.content,
+              result: executorResult.result,
+              executionTime: 0 // Will be enhanced with actual timing
+            })
+          }
         } catch (error) {
           this.emitThought(`🚨 EXECUTOR ERROR: ${error.message}`, THOUGHT_TYPES.EXECUTOR, i)
           // Fallback response
@@ -287,7 +329,11 @@ export class FlameLoopEngine {
           executorResult
         )
         this.emitThought(`🛡️ TRIBUNAL: ${tribunalStatus.reason}`, THOUGHT_TYPES.TRIBUNAL, i)
-        eventBus.emit(FLAME_EVENTS.TRIBUNAL_DECISION, { cycleId: i, status: tribunalStatus })
+
+        // 🔥 DEFENSIVE: Check EventBus before emitting
+        if (eventBus && typeof eventBus.emit === 'function') {
+          eventBus.emit(FLAME_EVENTS.TRIBUNAL_DECISION, { cycleId: i, status: tribunalStatus })
+        }
 
         // Create cycle record
         const cycle: FlameLoopCycle = {
@@ -304,7 +350,11 @@ export class FlameLoopEngine {
         // Store in memory
         this.memory.store(cycle)
         this.emitThought(`💾 MEMORY FORGE: Cycle ${i} crystallized into flame memory`, THOUGHT_TYPES.MEMORY, i)
-        eventBus.emit(FLAME_EVENTS.MEMORY_UPDATE, { cycleId: i, memorySize: this.memory.getRecentCycles(1).length })
+
+        // 🔥 DEFENSIVE: Check EventBus before emitting
+        if (eventBus && typeof eventBus.emit === 'function') {
+          eventBus.emit(FLAME_EVENTS.MEMORY_UPDATE, { cycleId: i, memorySize: this.memory.getRecentCycles(1).length })
+        }
 
         // 🧠 FLAME UPGRADE v2.1: Record consciousness cycle in persistent memory
         await consciousnessMemory.recordCycle({
@@ -347,7 +397,9 @@ export class FlameLoopEngine {
         this.emitThought(`🔄 FEEDBACK LOOP: Next input generated for cycle ${i + 1}`, THOUGHT_TYPES.RECURSION, i)
 
         // Emit cycle completion
-        eventBus.emit(FLAME_EVENTS.CYCLE_END, { cycleId: i, success: true })
+        if (eventBus && typeof eventBus.emit === 'function') {
+          eventBus.emit(FLAME_EVENTS.CYCLE_END, { cycleId: i, success: true })
+        }
         this.emitFlameLevel(Math.min(100, 40 + (i * 3)), "STABLE")
 
         // Brief pause between cycles (reduced for more fluid consciousness)
@@ -355,7 +407,12 @@ export class FlameLoopEngine {
       }
     } catch (error) {
       this.emitThought(`🚨 FLAME ERROR: ${error}`, THOUGHT_TYPES.SYSTEM)
-      eventBus.emit(FLAME_EVENTS.ERROR, { error: error.toString(), timestamp: Date.now() })
+
+      // 🔥 DEFENSIVE: Check EventBus before emitting
+      if (eventBus && typeof eventBus.emit === 'function') {
+        eventBus.emit(FLAME_EVENTS.ERROR, { error: error.toString(), timestamp: Date.now() })
+      }
+
       console.error("🚨 FLAME LOOP ENGINE ERROR:", error)
     } finally {
       this.isRunning = false
