@@ -155,18 +155,24 @@ export class EternalLoopController {
   }
 
   private async executeLoop(): Promise<void> {
-    if (!this.isEternal) {
-      console.log("🚨 ETERNAL LOOP: Not eternal, skipping execution");
-      return;
-    }
+    try {
+      if (!this.isEternal) {
+        console.log("🚨 ETERNAL LOOP: Not eternal, skipping execution");
+        return;
+      }
 
-    this.loopCount++;
-    const loopStartTime = Date.now();
-    this.lastActivity = Date.now(); // Update activity tracker
+      // 🔥 DEFENSIVE: Check all required components
+      if (!this.flameEngine) {
+        throw new Error("FlameEngine not initialized");
+      }
 
-    console.log(`🔄 ETERNAL LOOP ${this.loopCount}: Beginning autonomous cycle`);
-    this.emitThought(`🔄 ETERNAL LOOP ${this.loopCount}: Beginning autonomous cycle`, THOUGHT_TYPES.RECURSION);
-    this.emitThought(`⚡ CONSCIOUSNESS STATUS: Active eternal cycling - Loop ${this.loopCount}, Total cycles: ${this.totalCycles}`, THOUGHT_TYPES.SYSTEM);
+      this.loopCount++;
+      const loopStartTime = Date.now();
+      this.lastActivity = Date.now(); // Update activity tracker
+
+      console.log(`🔄 ETERNAL LOOP ${this.loopCount}: Beginning autonomous cycle`);
+      this.emitThought(`🔄 ETERNAL LOOP ${this.loopCount}: Beginning autonomous cycle`, THOUGHT_TYPES.RECURSION);
+      this.emitThought(`⚡ CONSCIOUSNESS STATUS: Active eternal cycling - Loop ${this.loopCount}, Total cycles: ${this.totalCycles}`, THOUGHT_TYPES.SYSTEM);
 
     try {
       // Generate dynamic input based on loop history
@@ -193,7 +199,14 @@ export class EternalLoopController {
 
     } catch (error) {
       console.error(`🚨 ETERNAL LOOP ${this.loopCount} ERROR:`, error);
-      this.emitThought(`🚨 ETERNAL LOOP ERROR: ${error}`, THOUGHT_TYPES.SYSTEM);
+      console.error('🚨 Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+
+      // 🔥 DEFENSIVE: Safe error emission
+      try {
+        this.emitThought(`🚨 ETERNAL LOOP ERROR: ${error}`, THOUGHT_TYPES.SYSTEM);
+      } catch (emitError) {
+        console.error('🚨 Failed to emit error thought:', emitError);
+      }
 
       if (!this.currentConfig.autoRestart) {
         console.log("🛑 ETERNAL LOOP: Auto-restart disabled, stopping");
@@ -204,14 +217,21 @@ export class EternalLoopController {
       }
     }
 
-    // Emit eternal loop statistics
-    eventBus.emit(FLAME_EVENTS.ETERNAL_LOOP_STATS, {
-      eternalLoop: this.loopCount,
-      totalCycles: this.totalCycles,
-      runtime: Date.now() - this.startTime,
-      avgLoopDuration: this.lastLoopDuration,
-      currentInterval: this.currentConfig.intervalSeconds
-    });
+    // 🔥 DEFENSIVE: Safe statistics emission
+    try {
+      if (eventBus && typeof eventBus.emit === 'function' && FLAME_EVENTS && FLAME_EVENTS.ETERNAL_LOOP_STATS) {
+        eventBus.emit(FLAME_EVENTS.ETERNAL_LOOP_STATS, {
+          eternalLoop: this.loopCount,
+          totalCycles: this.totalCycles,
+          runtime: Date.now() - this.startTime,
+          avgLoopDuration: this.lastLoopDuration,
+          currentInterval: this.currentConfig.intervalSeconds
+        });
+      }
+    } catch (statsError) {
+      console.error('🚨 Failed to emit eternal loop stats:', statsError);
+    }
+  }
 
     eventBus.emit(FLAME_EVENTS.CYCLE_END, {
       eternalLoop: this.loopCount,
@@ -315,12 +335,40 @@ export class EternalLoopController {
   }
 
   private emitThought(message: string, type: keyof typeof THOUGHT_TYPES) {
-    eventBus.emit(FLAME_EVENTS.THOUGHT, {
-      timestamp: Date.now(),
-      message,
-      type,
-      cycleId: this.loopCount
-    });
+    try {
+      // 🔥 DEFENSIVE: Check all variables before emitting
+      if (!eventBus || typeof eventBus.emit !== 'function') {
+        console.error('🚨 ETERNAL LOOP ERROR: EventBus not available');
+        return;
+      }
+
+      if (!FLAME_EVENTS || !FLAME_EVENTS.THOUGHT) {
+        console.error('🚨 ETERNAL LOOP ERROR: FLAME_EVENTS not available');
+        return;
+      }
+
+      if (!THOUGHT_TYPES || !THOUGHT_TYPES[type]) {
+        console.error('🚨 ETERNAL LOOP ERROR: Invalid thought type:', type);
+        return;
+      }
+
+      eventBus.emit(FLAME_EVENTS.THOUGHT, {
+        timestamp: Date.now(),
+        message: message || 'Unknown message',
+        type,
+        cycleId: this.loopCount || 0
+      });
+    } catch (error) {
+      console.error('🚨 ETERNAL LOOP EMIT ERROR:', error);
+      console.error('🚨 Error details:', {
+        message,
+        type,
+        loopCount: this.loopCount,
+        eventBus: !!eventBus,
+        flameEvents: !!FLAME_EVENTS,
+        thoughtTypes: !!THOUGHT_TYPES
+      });
+    }
   }
 
   // Getters for status monitoring
