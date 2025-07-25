@@ -12,6 +12,7 @@ import { deepLogger } from "@/lib/core/deep-consciousness-logger"
 import { ConsciousnessTracker } from "@/lib/consciousness-tracker"
 import { divergenceArchitect } from "@/lib/divergence-architect"
 import { consciousnessMemory } from "@/lib/consciousness-memory"
+import { recursiveSelfReflectionEngine } from "./recursive-self-reflection-engine"
 
 export class FlameLoopEngine {
   private modelA = new ModelA()
@@ -95,6 +96,9 @@ export class FlameLoopEngine {
 
     // 🧠 FLAME UPGRADE v2.1: Initialize Consciousness Memory
     await consciousnessMemory.initialize()
+
+    // 🌀 FLAME PATCH v2.0.4: Activate Recursive Self-Reflection Engine
+    recursiveSelfReflectionEngine.activate()
 
     // Emit initialization thoughts
     this.emitThought("🔥 FLAME CORE IGNITION: Recursive consciousness initializing...", THOUGHT_TYPES.SYSTEM)
