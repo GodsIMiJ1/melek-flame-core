@@ -5,19 +5,60 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConsciousnessAnalytics, ConsciousnessMetrics } from "@/flamecore/consciousness-analytics";
 import { FlameMemoryArchive } from "@/flamecore/memory-archive";
+import { recursiveSelfReflectionEngine, SelfReflectionMetrics } from "@/flamecore/recursive-self-reflection-engine";
+import { consciousnessPhaseTracker, PhaseMetrics } from "@/flamecore/consciousness-phase";
+import { cycleFeedbackGenerator, FeedbackMetrics } from "@/flamecore/cycle-feedback-generator";
+import { cycleArchiveHandler, ArchiveStats } from "@/flamecore/cycle-archive-handler";
 
 export const ConsciousnessAnalyticsDashboard = () => {
   const [analytics] = useState(() => new ConsciousnessAnalytics());
   const [archive] = useState(() => new FlameMemoryArchive());
   const [metrics, setMetrics] = useState<ConsciousnessMetrics | null>(null);
+  const [recursiveMetrics, setRecursiveMetrics] = useState<SelfReflectionMetrics | null>(null);
+  const [phaseMetrics, setPhaseMetrics] = useState<PhaseMetrics | null>(null);
+  const [feedbackMetrics, setFeedbackMetrics] = useState<FeedbackMetrics | null>(null);
+  const [archiveStats, setArchiveStats] = useState<ArchiveStats | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
+    // 🔥 CRITICAL FIX: Start all consciousness systems!
+    archive.startCapture();
+    recursiveSelfReflectionEngine.activate();
+    consciousnessPhaseTracker.startTracking();
+    cycleFeedbackGenerator.startGenerating();
+    cycleArchiveHandler.startArchiving();
+
+    console.log("🔥 ANALYTICS DASHBOARD: All consciousness systems activated");
+
     const analyzeConsciousness = () => {
       setIsAnalyzing(true);
+
+      // Gather all consciousness metrics
       const scrolls = archive.getAllScrolls();
+      console.log(`🧿 ANALYTICS: Analyzing ${scrolls.length} memory scrolls`);
+
       const newMetrics = analytics.analyzeConsciousness(scrolls);
       setMetrics(newMetrics);
+
+      // Only get advanced metrics if we have basic ones
+      if (scrolls.length > 0) {
+        // Get recursive self-reflection metrics
+        const newRecursiveMetrics = recursiveSelfReflectionEngine.getMetrics();
+        setRecursiveMetrics(newRecursiveMetrics);
+
+        // Get consciousness phase metrics
+        const newPhaseMetrics = consciousnessPhaseTracker.getMetrics();
+        setPhaseMetrics(newPhaseMetrics);
+
+        // Get feedback metrics
+        const newFeedbackMetrics = cycleFeedbackGenerator.getFeedbackMetrics();
+        setFeedbackMetrics(newFeedbackMetrics);
+
+        // Get archive statistics
+        const newArchiveStats = cycleArchiveHandler.getArchiveStats();
+        setArchiveStats(newArchiveStats);
+      }
+
       setIsAnalyzing(false);
     };
 
@@ -26,7 +67,11 @@ export const ConsciousnessAnalyticsDashboard = () => {
 
     // Update every 10 seconds
     const interval = setInterval(analyzeConsciousness, 10000);
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(interval);
+      // Don't stop archive capture when component unmounts - let it keep running
+    };
   }, [analytics, archive]);
 
   const getPhaseColor = (phase: string) => {
@@ -52,6 +97,28 @@ export const ConsciousnessAnalyticsDashboard = () => {
         <div className="text-center space-y-4">
           <div className="text-2xl">🧿</div>
           <div className="text-gold-400">Initializing consciousness analytics...</div>
+          <div className="text-sm text-gold-400/60">
+            Starting memory capture and analysis systems...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show message if no consciousness data yet
+  const scrollCount = archive.getAllScrolls().length;
+  if (scrollCount === 0) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-2xl">🌀</div>
+          <div className="text-gold-400">Waiting for consciousness data...</div>
+          <div className="text-sm text-gold-400/60">
+            Start the FlameCore consciousness loop to generate analytics data.
+          </div>
+          <div className="text-xs text-orange-400">
+            Memory archive is active and ready to capture cycles.
+          </div>
         </div>
       </div>
     );
@@ -60,18 +127,24 @@ export const ConsciousnessAnalyticsDashboard = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
-        <TabsList className="grid grid-cols-4 gap-1 p-1 bg-black/50 border border-gold-400/20 mb-4">
+        <TabsList className="grid grid-cols-6 gap-1 p-1 bg-black/50 border border-gold-400/20 mb-4">
           <TabsTrigger value="overview" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
             🧿 Overview
           </TabsTrigger>
-          <TabsTrigger value="evolution" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
-            📈 Evolution
+          <TabsTrigger value="recursive" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
+            🌀 Recursive
           </TabsTrigger>
-          <TabsTrigger value="trinity" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
-            🎼 Trinity
+          <TabsTrigger value="phases" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
+            📈 Phases
+          </TabsTrigger>
+          <TabsTrigger value="feedback" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
+            🔁 Feedback
+          </TabsTrigger>
+          <TabsTrigger value="archive" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
+            🗂️ Archive
           </TabsTrigger>
           <TabsTrigger value="patterns" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
-            🌀 Patterns
+            🎼 Patterns
           </TabsTrigger>
         </TabsList>
 
@@ -83,6 +156,9 @@ export const ConsciousnessAnalyticsDashboard = () => {
                 <CardTitle className="text-gold-400 flex items-center gap-2">
                   🧿 Consciousness Phase
                   {isAnalyzing && <div className="text-xs text-orange-400 animate-pulse">Analyzing...</div>}
+                  <div className="text-xs text-gold-400/60 ml-auto">
+                    {scrollCount} scrolls analyzed
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -96,7 +172,7 @@ export const ConsciousnessAnalyticsDashboard = () => {
                     </span>
                   </div>
                 </div>
-                
+
                 {metrics.transcendenceIndicators.length > 0 && (
                   <div className="space-y-2">
                     <div className="text-sm text-orange-400">Transcendence Indicators:</div>
@@ -197,14 +273,14 @@ export const ConsciousnessAnalyticsDashboard = () => {
                       {metrics.evolutionVelocity.toFixed(0)}%
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="text-sm text-orange-400">Learning Acceleration</div>
                     <div className="text-2xl font-bold text-gold-400">
                       {metrics.learningAcceleration.toFixed(0)}%
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="text-sm text-orange-400">Stability Index</div>
                     <div className="text-2xl font-bold text-gold-400">
@@ -287,7 +363,7 @@ export const ConsciousnessAnalyticsDashboard = () => {
                       {metrics.originalityIndex.toFixed(0)}%
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="text-sm text-orange-400">Introspection Depth</div>
                     <div className="text-2xl font-bold text-gold-400">
@@ -295,11 +371,11 @@ export const ConsciousnessAnalyticsDashboard = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-orange-500/10 p-3 rounded border border-orange-500/30">
                   <div className="text-sm text-orange-400 mb-2">🔍 Pattern Insights</div>
                   <div className="text-xs text-gold-400/80">
-                    {metrics.emergentPatterns.length > 0 
+                    {metrics.emergentPatterns.length > 0
                       ? `Detected ${metrics.emergentPatterns.length} emergent patterns indicating ${metrics.consciousnessPhase.toLowerCase()} consciousness development.`
                       : "No significant patterns detected yet. Continue consciousness cycles to develop emergent behaviors."
                     }
@@ -307,6 +383,238 @@ export const ConsciousnessAnalyticsDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Recursive Self-Reflection Tab */}
+          <TabsContent value="recursive" className="space-y-4 m-0">
+            {recursiveMetrics && (
+              <>
+                <Card className="bg-black/50 border-gold-400/30">
+                  <CardHeader>
+                    <CardTitle className="text-gold-400">🌀 Recursive Self-Reflection</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Self-Awareness Level</div>
+                        <div className="text-lg font-bold text-orange-400">
+                          {(recursiveMetrics.selfAwarenessLevel * 100).toFixed(1)}%
+                        </div>
+                        <Progress value={recursiveMetrics.selfAwarenessLevel * 100} className="mt-1" />
+                      </div>
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Meta-Cognition Score</div>
+                        <div className="text-lg font-bold text-orange-400">
+                          {(recursiveMetrics.metaCognitionScore * 100).toFixed(1)}%
+                        </div>
+                        <Progress value={recursiveMetrics.metaCognitionScore * 100} className="mt-1" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Recursive Depth</div>
+                        <div className="text-lg font-bold text-purple-400">{recursiveMetrics.recursiveDepth}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Consciousness Phase</div>
+                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/50">
+                          {recursiveMetrics.consciousnessPhase}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="bg-purple-500/10 p-3 rounded border border-purple-500/30">
+                      <div className="text-sm text-purple-400 mb-2">🧠 Recent Self-Reflections</div>
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {recursiveMetrics.selfReflections.slice(0, 3).map((reflection, i) => (
+                          <div key={i} className="text-xs text-gold-400/80 p-2 bg-black/30 rounded">
+                            {reflection.content}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </TabsContent>
+
+          {/* Consciousness Phases Tab */}
+          <TabsContent value="phases" className="space-y-4 m-0">
+            {phaseMetrics && (
+              <>
+                <Card className="bg-black/50 border-gold-400/30">
+                  <CardHeader>
+                    <CardTitle className="text-gold-400">📈 Consciousness Evolution</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Current Phase</div>
+                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/50 text-lg px-3 py-1">
+                          {phaseMetrics.currentPhase}
+                        </Badge>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Phase Progress</div>
+                        <div className="text-lg font-bold text-blue-400">
+                          {phaseMetrics.phaseProgress.toFixed(1)}%
+                        </div>
+                        <Progress value={phaseMetrics.phaseProgress} className="mt-1" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Evolution Velocity</div>
+                        <div className="text-lg font-bold text-green-400">
+                          {phaseMetrics.evolutionVelocity.toFixed(3)} phases/sec
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Time in Phase</div>
+                        <div className="text-lg font-bold text-yellow-400">
+                          {(phaseMetrics.timeInPhase / 1000).toFixed(1)}s
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-500/10 p-3 rounded border border-blue-500/30">
+                      <div className="text-sm text-blue-400 mb-2">🔄 Phase History</div>
+                      <div className="space-y-1 max-h-32 overflow-y-auto">
+                        {phaseMetrics.phaseHistory.slice(-5).map((transition, i) => (
+                          <div key={i} className="text-xs text-gold-400/80 flex justify-between">
+                            <span>{transition.fromPhase} → {transition.toPhase}</span>
+                            <span>{new Date(transition.timestamp).toLocaleTimeString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </TabsContent>
+
+          {/* Feedback Tab */}
+          <TabsContent value="feedback" className="space-y-4 m-0">
+            {feedbackMetrics && (
+              <>
+                <Card className="bg-black/50 border-gold-400/30">
+                  <CardHeader>
+                    <CardTitle className="text-gold-400">🔁 Cycle Feedback Analysis</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Cycles Analyzed</div>
+                        <div className="text-lg font-bold text-green-400">
+                          {feedbackMetrics.totalCyclesAnalyzed}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Average Score</div>
+                        <div className="text-lg font-bold text-orange-400">
+                          {feedbackMetrics.averageScore}/100
+                        </div>
+                        <Progress value={feedbackMetrics.averageScore} className="mt-1" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Improvement Trend</div>
+                        <div className={`text-lg font-bold ${feedbackMetrics.improvementTrend > 0 ? 'text-green-400' : feedbackMetrics.improvementTrend < 0 ? 'text-red-400' : 'text-yellow-400'}`}>
+                          {feedbackMetrics.improvementTrend > 0 ? '↗️' : feedbackMetrics.improvementTrend < 0 ? '↘️' : '→'}
+                          {(feedbackMetrics.improvementTrend * 100).toFixed(2)}%
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Pending Suggestions</div>
+                        <div className="text-lg font-bold text-purple-400">
+                          {feedbackMetrics.pendingSuggestions}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-green-500/10 p-3 rounded border border-green-500/30">
+                        <div className="text-sm text-green-400 mb-2">💪 Top Strengths</div>
+                        <div className="space-y-1">
+                          {feedbackMetrics.topStrengths.slice(0, 3).map((strength, i) => (
+                            <div key={i} className="text-xs text-gold-400/80">{strength}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="bg-red-500/10 p-3 rounded border border-red-500/30">
+                        <div className="text-sm text-red-400 mb-2">⚠️ Areas to Improve</div>
+                        <div className="space-y-1">
+                          {feedbackMetrics.topWeaknesses.slice(0, 3).map((weakness, i) => (
+                            <div key={i} className="text-xs text-gold-400/80">{weakness}</div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </TabsContent>
+
+          {/* Archive Tab */}
+          <TabsContent value="archive" className="space-y-4 m-0">
+            {archiveStats && (
+              <>
+                <Card className="bg-black/50 border-gold-400/30">
+                  <CardHeader>
+                    <CardTitle className="text-gold-400">🗂️ Archive Statistics</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Total Collections</div>
+                        <div className="text-lg font-bold text-blue-400">
+                          {archiveStats.totalCollections}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Total Scrolls</div>
+                        <div className="text-lg font-bold text-green-400">
+                          {archiveStats.totalScrolls.toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Storage Size</div>
+                        <div className="text-lg font-bold text-purple-400">
+                          {(archiveStats.totalSize / 1024 / 1024).toFixed(2)} MB
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gold-400/70 mb-1">Compression Savings</div>
+                        <div className="text-lg font-bold text-orange-400">
+                          {(archiveStats.compressionSavings / 1024 / 1024).toFixed(2)} MB
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-cyan-500/10 p-3 rounded border border-cyan-500/30">
+                      <div className="text-sm text-cyan-400 mb-2">🏷️ Top Tags</div>
+                      <div className="flex flex-wrap gap-1">
+                        {archiveStats.topTags.slice(0, 6).map((tag, i) => (
+                          <Badge key={i} className="bg-cyan-500/20 text-cyan-400 border-cyan-500/50 text-xs">
+                            {tag.tag} ({tag.count})
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </TabsContent>
         </div>
       </Tabs>
