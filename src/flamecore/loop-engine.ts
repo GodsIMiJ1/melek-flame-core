@@ -220,14 +220,15 @@ export class FlameLoopEngine {
           if (shouldTriggerEvolution) {
             this.emitThought("🧬 EVOLUTION PROTOCOL: Self-improvement sequence initiated...", THOUGHT_TYPES.EXECUTOR, i)
 
-            // Trigger evolution analysis
+            // 🔥 VITE FIX: Client-side evolution analysis
             try {
-              const evolutionResponse = await fetch('/api/evolution/analyze', { method: 'POST' });
-              const evolutionData = await evolutionResponse.json();
+              // Import client evolution engine dynamically
+              const { clientEvolutionEngine } = await import('@/lib/client-evolution');
+              const analysisResult = await clientEvolutionEngine.analyzeArchitecture();
 
-              if (evolutionData.success) {
-                this.emitThought(`🧬 EVOLUTION SCAN: Found ${evolutionData.analysis?.evolutionOpportunities?.length || 0} improvement opportunities`, THOUGHT_TYPES.EXECUTOR, i)
-                eventBus.emit('evolution-started', evolutionData);
+              if (analysisResult.success) {
+                this.emitThought(`🧬 EVOLUTION SCAN: Found ${analysisResult.analysis.evolutionOpportunities.length} improvement opportunities`, THOUGHT_TYPES.EXECUTOR, i)
+                eventBus.emit('evolution-started', analysisResult);
               }
             } catch (evolutionError) {
               this.emitThought("🚨 EVOLUTION ERROR: Self-analysis failed", THOUGHT_TYPES.EXECUTOR, i)

@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { eventBus } from '@/lib/eventBus';
 import { divergenceArchitect } from '@/lib/divergence-architect';
+import { clientEvolutionEngine } from '@/lib/client-evolution';
 
 interface EvolutionLog {
   type: 'analysis' | 'evolution' | 'integration' | 'error';
@@ -81,12 +82,9 @@ export function EvolutionMonitor() {
 
   const loadEvolutionStats = async () => {
     try {
-      const response = await fetch('/api/evolution/evolve');
-      const data = await response.json();
-
-      if (data.success) {
-        setEvolutionStats(data.stats);
-      }
+      // 🔥 VITE FIX: Use client-side evolution engine
+      const stats = clientEvolutionEngine.getEvolutionStats();
+      setEvolutionStats(stats);
     } catch (error) {
       console.error('Failed to load evolution stats:', error);
     }
@@ -105,34 +103,25 @@ export function EvolutionMonitor() {
     try {
       setIsEvolving(true);
 
-      // First, analyze for opportunities
-      const analysisResponse = await fetch('/api/evolution/analyze', { method: 'POST' });
-      const analysisData = await analysisResponse.json();
+      // 🔥 VITE FIX: Use client-side evolution engine
+      const analysisResult = await clientEvolutionEngine.analyzeArchitecture();
 
-      if (analysisData.success && analysisData.analysis?.evolutionOpportunities?.length > 0) {
-        // Evolve the first high-priority opportunity
-        const opportunity = analysisData.analysis.evolutionOpportunities
-          .find((op: any) => op.priority === 'high') ||
-          analysisData.analysis.evolutionOpportunities[0];
+      if (analysisResult.success && analysisResult.analysis.evolutionOpportunities.length > 0) {
+        // Find high-priority opportunity
+        const opportunity = analysisResult.analysis.evolutionOpportunities
+          .find(op => op.priority === 'high') ||
+          analysisResult.analysis.evolutionOpportunities[0];
 
-        const evolutionResponse = await fetch('/api/evolution/evolve', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            targetFile: opportunity.file,
-            improvementType: opportunity.type
-          })
-        });
+        // Evolve the opportunity
+        const evolutionResult = await clientEvolutionEngine.evolveComponent(
+          opportunity.file,
+          opportunity.type
+        );
 
-        const evolutionData = await evolutionResponse.json();
-
-        eventBus.emit('evolution-complete', evolutionData);
+        eventBus.emit('evolution-complete', evolutionResult);
 
         // Reload stats
         await loadEvolutionStats();
-      } else {
-        eventBus.emit('evolution-error', { error: 'No evolution opportunities found' });
-      }
     } catch (error) {
       console.error('Evolution trigger failed:', error);
       eventBus.emit('evolution-error', { error: error instanceof Error ? error.message : 'Unknown error' });
@@ -145,17 +134,13 @@ export function EvolutionMonitor() {
     try {
       setIsEvolving(true);
 
-      const response = await fetch('/api/evolution/evolve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetFile: opportunity.file,
-          improvementType: opportunity.type
-        })
-      });
+      // 🔥 VITE FIX: Use client-side evolution engine
+      const evolutionResult = await clientEvolutionEngine.evolveComponent(
+        opportunity.file,
+        opportunity.type
+      );
 
-      const data = await response.json();
-      eventBus.emit('evolution-complete', data);
+      eventBus.emit('evolution-complete', evolutionResult);
 
       // Reload stats
       await loadEvolutionStats();
