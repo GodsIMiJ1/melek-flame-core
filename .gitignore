@@ -25,3 +25,11 @@ dist-ssr
 
 # M.I.C. Evolution Sandbox
 .mic-evolution-sandbox/
+
+# 🔥 SACRED SCROLL ARCHIVES - Keep local only
+public/scrolls/*.json
+public/scrolls/*.flame
+public/scrolls/*.txt
+public/scrolls/cycle-*
+public/scrolls/scroll-*
+public/scrolls/flame-memory-*
