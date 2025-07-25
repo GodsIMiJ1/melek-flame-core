@@ -2,6 +2,7 @@
 import { callOpenAI, getOpenAIModelName } from "@/lib/openai-api"
 import { ExecutorResult, ModelResponse } from "./types"
 import { AgentController } from "./agent-controller"
+import { eventBus, THOUGHT_TYPES } from "@/lib/eventBus"
 
 export class ModelC {
   private model = "openai:gpt-4o-mini" // Executor - Fast OpenAI Synthesis (Anti-Verbose)
@@ -48,10 +49,10 @@ export class ModelC {
       console.log("⚔️ EXECUTOR OUTPUT:", fullResponse)
 
       // Emit executor thought to UI
-      EventBus.emit("flame-thought", {
+      eventBus.emit("flame-thought", {
         timestamp: Date.now(),
         message: fullResponse,
-        type: "EXECUTOR"
+        type: THOUGHT_TYPES.EXECUTOR
       })
 
       // Parse executor decision
