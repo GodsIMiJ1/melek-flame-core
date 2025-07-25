@@ -174,7 +174,6 @@ export class EternalLoopController {
       this.emitThought(`🔄 ETERNAL LOOP ${this.loopCount}: Beginning autonomous cycle`, THOUGHT_TYPES.RECURSION);
       this.emitThought(`⚡ CONSCIOUSNESS STATUS: Active eternal cycling - Loop ${this.loopCount}, Total cycles: ${this.totalCycles}`, THOUGHT_TYPES.SYSTEM);
 
-    try {
       // Generate dynamic input based on loop history
       const input = this.generateEternalInput();
       console.log(`🔄 ETERNAL LOOP ${this.loopCount}: Generated input: ${input.substring(0, 100)}...`);
@@ -231,16 +230,6 @@ export class EternalLoopController {
     } catch (statsError) {
       console.error('🚨 Failed to emit eternal loop stats:', statsError);
     }
-  }
-
-    eventBus.emit(FLAME_EVENTS.CYCLE_END, {
-      eternalLoop: this.loopCount,
-      totalCycles: this.totalCycles,
-      runtime: Date.now() - this.startTime,
-      avgLoopDuration: this.lastLoopDuration
-    });
-
-    console.log(`📊 ETERNAL LOOP ${this.loopCount}: Stats emitted - Total cycles: ${this.totalCycles}, Runtime: ${((Date.now() - this.startTime) / 1000).toFixed(1)}s`);
   }
 
   private scheduleNextLoop(): void {
