@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FlameMemoryArchive, MemoryScroll, MemoryInsight } from "@/flamecore/memory-archive";
+import ScrollArchiveViewer from "./ScrollArchiveViewer";
 
 export const MemoryScrollDashboard = () => {
   const [archive] = useState(() => new FlameMemoryArchive());
@@ -23,7 +24,7 @@ export const MemoryScrollDashboard = () => {
     const interval = setInterval(() => {
       const allScrolls = archive.getAllScrolls();
       setScrolls(allScrolls);
-      
+
       if (allScrolls.length > 0) {
         const newInsights = archive.generateInsights(10);
         setInsights(newInsights);
@@ -43,7 +44,7 @@ export const MemoryScrollDashboard = () => {
     setIsCapturing(false);
   };
 
-  const exportScrolls = () => {
+  const exportScrolls = async () => {
     const scrollsToExport = selectedScrolls.length > 0 ? selectedScrolls : undefined;
     let content: string;
     let filename: string;
@@ -66,11 +67,38 @@ export const MemoryScrollDashboard = () => {
         mimeType = 'text/plain';
     }
 
+    // 🔥 SACRED SCROLL ORGANIZATION: Try server save first, fallback to download
+    try {
+      const response = await fetch('/api/scrolls/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename,
+          content,
+          format: mimeType
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(`📜 MANUAL EXPORT: ${result.message}`);
+        return; // Success, no need for browser download
+      }
+    } catch (error) {
+      console.log('📜 Server save failed, using browser download...');
+    }
+
+    // Fallback to organized browser download
+    const today = new Date().toISOString().split('T')[0];
+    const organizedFilename = `FLAME-MANUAL-EXPORT-${today}-${filename}`;
+
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = filename;
+    link.download = organizedFilename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -78,8 +106,8 @@ export const MemoryScrollDashboard = () => {
   };
 
   const toggleScrollSelection = (scrollId: string) => {
-    setSelectedScrolls(prev => 
-      prev.includes(scrollId) 
+    setSelectedScrolls(prev =>
+      prev.includes(scrollId)
         ? prev.filter(id => id !== scrollId)
         : [...prev, scrollId]
     );
@@ -121,9 +149,12 @@ export const MemoryScrollDashboard = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <Tabs defaultValue="scrolls" className="flex-1 flex flex-col min-h-0">
-        <TabsList className="grid grid-cols-3 gap-1 p-1 bg-black/50 border border-gold-400/20 mb-4">
+        <TabsList className="grid grid-cols-4 gap-1 p-1 bg-black/50 border border-gold-400/20 mb-4">
           <TabsTrigger value="scrolls" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
             📜 Memory Scrolls
+          </TabsTrigger>
+          <TabsTrigger value="archive" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
+            🗂️ Sacred Archive
           </TabsTrigger>
           <TabsTrigger value="insights" className="text-xs py-2 bg-black/50 text-gold-400 border border-gold-400/30 hover:bg-gold-400/10 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400 data-[state=active]:border-orange-500/50">
             🧿 Insights
@@ -139,8 +170,8 @@ export const MemoryScrollDashboard = () => {
               <Button
                 onClick={isCapturing ? stopCapture : startCapture}
                 className={`${
-                  isCapturing 
-                    ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border-red-500/50' 
+                  isCapturing
+                    ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border-red-500/50'
                     : 'bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border-orange-500/50'
                 }`}
                 variant="outline"
@@ -148,7 +179,7 @@ export const MemoryScrollDashboard = () => {
               >
                 {isCapturing ? '🛑 Stop Capture' : '🔥 Start Capture'}
               </Button>
-              
+
               <Select value={filterTag} onValueChange={setFilterTag}>
                 <SelectTrigger className="w-48 bg-black/50 border-gold-400/30 text-gold-400">
                   <SelectValue />
@@ -162,7 +193,7 @@ export const MemoryScrollDashboard = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="text-xs text-gold-400/70">
               Status: <span className={isCapturing ? 'text-green-400' : 'text-orange-400'}>
                 {isCapturing ? '🔥 CAPTURING' : '💭 IDLE'}
@@ -177,7 +208,7 @@ export const MemoryScrollDashboard = () => {
                   📜 No memory scrolls found. Start capturing to create sacred archives of consciousness.
                 </div>
               )}
-              
+
               {filteredScrolls.map((scroll) => (
                 <Card key={scroll.id} className="bg-black/50 border-gold-400/30">
                   <CardHeader className="pb-2">
@@ -222,17 +253,17 @@ export const MemoryScrollDashboard = () => {
                         </Badge>
                       )}
                     </div>
-                    
+
                     <div className="text-xs text-gold-400/80">
-                      Confidence: {(scroll.content.metrics.confidence * 100).toFixed(1)}% | 
-                      Thoughts: {scroll.content.thoughts.length} | 
+                      Confidence: {(scroll.content.metrics.confidence * 100).toFixed(1)}% |
+                      Thoughts: {scroll.content.thoughts.length} |
                       Verdicts: {scroll.content.verdicts.length}
                     </div>
-                    
+
                     <div className="text-xs text-gold-400/60">
                       Tags: {scroll.tags.join(', ')}
                     </div>
-                    
+
                     {scroll.content.thoughts.length > 0 && (
                       <div className="text-xs text-gold-400/70 italic">
                         Latest: "{scroll.content.thoughts[scroll.content.thoughts.length - 1].message.substring(0, 100)}..."
@@ -243,6 +274,10 @@ export const MemoryScrollDashboard = () => {
               ))}
             </div>
           </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="archive" className="flex-1 flex flex-col min-h-0 m-0">
+          <ScrollArchiveViewer />
         </TabsContent>
 
         <TabsContent value="insights" className="flex-1 flex flex-col min-h-0 m-0">
@@ -278,19 +313,19 @@ export const MemoryScrollDashboard = () => {
                       <div className="text-lg font-bold text-gold-400">{insights.evolutionTrend}</div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="text-sm text-orange-400">Dominant Tone</div>
                     <Badge className={getToneColor(insights.dominantTone)}>
                       {insights.dominantTone}
                     </Badge>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="text-sm text-orange-400">Breakthrough Moments</div>
                     <div className="text-lg font-bold text-gold-400">{insights.breakthroughMoments}</div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="text-sm text-orange-400">Top Themes</div>
                     <div className="flex gap-2 flex-wrap">
@@ -334,14 +369,14 @@ export const MemoryScrollDashboard = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="text-xs text-gold-400/70">
-                  {selectedScrolls.length > 0 
+                  {selectedScrolls.length > 0
                     ? `Selected: ${selectedScrolls.length} scrolls`
                     : `All scrolls: ${scrolls.length} total`
                   }
                 </div>
-                
+
                 <Button
                   onClick={exportScrolls}
                   className="w-full bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border-orange-500/50"

@@ -574,25 +574,115 @@ export class FlameMemoryArchive {
     }
   }
 
-  // 🔥 Browser-compatible file download
+  // 🔥 SACRED SCROLL MANAGEMENT: Save to dedicated scrolls folder
   private downloadFile(filename: string, content: string, mimeType: string): void {
     try {
-      const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      link.style.display = 'none';
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      URL.revokeObjectURL(url);
+      // 🔥 FLAME PATCH v2.0.5: Try server-side save first, fallback to downloads
+      this.saveToServerScrollsFolder(filename, content, mimeType)
+        .catch(() => {
+          console.log('📜 Server save failed, using browser download...');
+          this.fallbackBrowserDownload(filename, content, mimeType);
+        });
     } catch (error) {
       console.error('🚨 FILE DOWNLOAD ERROR:', error);
+      // Emergency fallback to simple download
+      this.emergencyDownload(filename, content, mimeType);
     }
+  }
+
+  // 🔥 SERVER-SIDE SCROLL SAVER: Save to organized scrolls folder
+  private async saveToServerScrollsFolder(filename: string, content: string, mimeType: string): Promise<void> {
+    try {
+      const response = await fetch('/api/scrolls/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename,
+          content,
+          format: mimeType
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server save failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log(`📜 SACRED SCROLL: ${result.message}`);
+
+      // Emit success event
+      this.emitArchiveEvent(`📜 SCROLL SAVED: ${result.path}`);
+    } catch (error) {
+      console.error('🚨 SERVER SCROLL SAVE ERROR:', error);
+      throw error; // Re-throw to trigger fallback
+    }
+  }
+
+  // 🔥 FALLBACK: Organized browser download
+  private fallbackBrowserDownload(filename: string, content: string, mimeType: string): void {
+    // Add date-organized prefix to filename for better organization
+    const today = new Date().toISOString().split('T')[0];
+    const organizedFilename = `FLAME-SCROLLS-${today}-${filename}`;
+
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = organizedFilename;
+    link.style.display = 'none';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+
+    console.log(`📜 SACRED SCROLL: Saved as ${organizedFilename} (browser download)`);
+    this.emitArchiveEvent(`📜 SCROLL DOWNLOADED: ${organizedFilename}`);
+  }
+
+  // 🔥 ADVANCED: Use File System Access API for proper folder organization
+  private async saveToScrollsFolder(filename: string, content: string, mimeType: string): Promise<void> {
+    try {
+      const fileHandle = await (window as any).showSaveFilePicker({
+        suggestedName: filename,
+        startIn: 'downloads',
+        types: [{
+          description: 'Flame Scrolls',
+          accept: { [mimeType]: [`.${filename.split('.').pop()}`] }
+        }]
+      });
+
+      const writable = await fileHandle.createWritable();
+      await writable.write(content);
+      await writable.close();
+
+      console.log(`📜 SACRED SCROLL: Saved ${filename} to chosen location`);
+    } catch (error) {
+      console.error('🚨 FILE SYSTEM ACCESS ERROR:', error);
+      // Fallback to regular download
+      this.emergencyDownload(filename, content, mimeType);
+    }
+  }
+
+  // 🔥 EMERGENCY FALLBACK: Simple download without organization
+  private emergencyDownload(filename: string, content: string, mimeType: string): void {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
   }
 
   private emitArchiveEvent(message: string): void {
