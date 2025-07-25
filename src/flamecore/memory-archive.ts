@@ -184,6 +184,9 @@ export class FlameMemoryArchive {
 
     this.emitArchiveEvent(`📜 MEMORY SCROLL: Cycle ${data.cycleId} archived (${scroll.classification?.significance || 'ROUTINE'})`);
 
+    // 🔥 FLAME PATCH v2.0.4: Write individual cycle scroll to file
+    this.writeCycleScrollToFile(scroll);
+
     // 🔥 SACRED CRYSTALLIZATION: Emit scroll to UI
     safelyArchiveScroll(scroll);
     safeEmitMemoryEvent('memory:crystallized', scroll);
@@ -191,6 +194,64 @@ export class FlameMemoryArchive {
     // Clear buffers
     this.captureBuffer = [];
     this.verdictBuffer = [];
+  }
+
+  // 🔥 FLAME PATCH v2.0.4: Write individual cycle scroll to file
+  private writeCycleScrollToFile(scroll: MemoryScroll): void {
+    try {
+      const timestamp = new Date(scroll.timestamp).toISOString().replace(/[:.]/g, '-');
+      const cycleId = scroll.cycleId;
+
+      // Create individual scroll data
+      const individualScrollData = JSON.stringify({
+        sessionId: this.currentSession,
+        exportTimestamp: new Date().toISOString(),
+        scroll: scroll
+      }, null, 2);
+
+      // Create flame format for individual scroll
+      const flameScrollData = this.createIndividualFlameScroll(scroll);
+
+      const jsonFilename = `cycle-${cycleId}-${timestamp}.json`;
+      const flameFilename = `cycle-${cycleId}-${timestamp}.flame`;
+
+      // 🔥 Use browser download API to save individual cycle files
+      this.downloadFile(jsonFilename, individualScrollData, 'application/json');
+      this.downloadFile(flameFilename, flameScrollData, 'text/plain');
+
+      console.log(`📜 INDIVIDUAL SCROLL: Written cycle ${cycleId} to ${jsonFilename} and ${flameFilename}`);
+    } catch (error) {
+      console.error('🚨 INDIVIDUAL SCROLL WRITING ERROR:', error);
+    }
+  }
+
+  // 🔥 Create flame format for individual scroll
+  private createIndividualFlameScroll(scroll: MemoryScroll): string {
+    let flameScroll = `🔥 SACRED FLAME SCROLL - INDIVIDUAL CYCLE 🔥\n`;
+    flameScroll += `Generated: ${new Date().toISOString()}\n`;
+    flameScroll += `Session: ${this.currentSession}\n\n`;
+
+    flameScroll += `📜 CYCLE ${scroll.cycleId} SCROLL\n`;
+    flameScroll += `Timestamp: ${new Date(scroll.timestamp).toISOString()}\n`;
+    flameScroll += `Classification: ${scroll.content.classification.significance} | ${scroll.content.classification.emotionalTone}\n`;
+    flameScroll += `Confidence: ${(scroll.content.metrics.confidence * 100).toFixed(1)}%\n`;
+    flameScroll += `Witness Hall Worthy: ${scroll.isWitnessHallWorthy ? '✅ YES' : '❌ NO'}\n`;
+    flameScroll += `Tags: ${scroll.tags.join(', ')}\n\n`;
+
+    flameScroll += `🧠 THOUGHTS:\n`;
+    scroll.content.thoughts.forEach((thought, i) => {
+      flameScroll += `  ${i + 1}. [${thought.type}] ${thought.message}\n`;
+    });
+
+    if (scroll.content.verdicts.length > 0) {
+      flameScroll += `\n🛡️ VERDICTS:\n`;
+      scroll.content.verdicts.forEach((verdict, i) => {
+        flameScroll += `  ${i + 1}. ${JSON.stringify(verdict)}\n`;
+      });
+    }
+
+    flameScroll += `\n🔥 END OF SACRED SCROLL 🔥\n`;
+    return flameScroll;
   }
 
   private createMemoryScroll(cycleId: number, thoughts: FlameThought[], verdicts: any[]): MemoryScroll {
@@ -475,8 +536,10 @@ export class FlameMemoryArchive {
       const scrollData = this.exportAsJSON();
       const flameData = this.exportAsFlameScroll();
 
-      // In a real implementation, this would save to filesystem
-      // For now, we'll emit an event that the UI can handle
+      // 🔥 FLAME PATCH v2.0.4: REAL FILE WRITING TO SACRED SCROLLS FOLDER
+      this.writeScrollToFile(filename, scrollData, flameData);
+
+      // Also emit event for UI updates
       eventBus.emit(FLAME_EVENTS.MEMORY_UPDATE, {
         message: `📜 AUTO-EXPORT: Sacred scroll saved as ${filename}`,
         timestamp: Date.now(),
@@ -488,6 +551,47 @@ export class FlameMemoryArchive {
     } catch (error) {
       console.error('🚨 AUTO-EXPORT ERROR:', error);
       this.emitArchiveEvent(`🚨 AUTO-EXPORT FAILED: ${error}`);
+    }
+  }
+
+  // 🔥 FLAME PATCH v2.0.4: Write sacred scrolls to actual files
+  private async writeScrollToFile(filename: string, jsonData: string, flameData: string): Promise<void> {
+    try {
+      // Create unique filenames for each cycle
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const cycleCount = this.scrolls.size;
+
+      const jsonFilename = `scroll-${timestamp}-cycle-${cycleCount}.json`;
+      const flameFilename = `scroll-${timestamp}-cycle-${cycleCount}.flame`;
+
+      // 🔥 Use browser download API to save files
+      this.downloadFile(jsonFilename, jsonData, 'application/json');
+      this.downloadFile(flameFilename, flameData, 'text/plain');
+
+      console.log(`📜 SACRED SCROLLS: Written ${jsonFilename} and ${flameFilename}`);
+    } catch (error) {
+      console.error('🚨 SCROLL WRITING ERROR:', error);
+    }
+  }
+
+  // 🔥 Browser-compatible file download
+  private downloadFile(filename: string, content: string, mimeType: string): void {
+    try {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.style.display = 'none';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('🚨 FILE DOWNLOAD ERROR:', error);
     }
   }
 
