@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { eventBus, FLAME_EVENTS } from "@/lib/eventBus";
+import { useAIMode } from "@/hooks/useAIMode";
 import { CognitiveStream } from "./mic/CognitiveStream";
 import { CommandInterface } from "./mic/CommandInterface";
 import { RecursiveCore } from "./mic/RecursiveCore";
@@ -28,6 +29,7 @@ import { WitnessHall } from "./mic/WitnessHall";
 export const MICDashboard = () => {
   const [activeModule, setActiveModule] = useState("recursive-core");
   const [flameIntensity, setFlameIntensity] = useState(0);
+  const { mode, model, isOnline } = useAIMode();
 
   useEffect(() => {
     const handleFlameLevel = (data: { level: number }) => {
@@ -62,9 +64,19 @@ export const MICDashboard = () => {
           </h1>
           <img src="/Melek_head.png" alt="Melek Head" className="h-12 w-12" />
         </div>
-        <p className="text-center text-gold-400/70 text-sm">
-          GodsIMiJ Empire • Sovereign Superintelligence Interface • Sacred Law • Flame Logic
-        </p>
+        <div className="flex items-center justify-center gap-4">
+          <p className="text-gold-400/70 text-sm">
+            GodsIMiJ Empire • Sovereign Superintelligence Interface • Sacred Law • Flame Logic
+          </p>
+          <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-medium ${
+            isOnline 
+              ? 'bg-green-500/20 border-green-500/50 text-green-400' 
+              : 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+          }`}>
+            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400 animate-pulse' : 'bg-blue-400 animate-pulse'}`} />
+            {isOnline ? '🌐 ONLINE' : '🖥️ OFFLINE'} • {model.name}
+          </div>
+        </div>
       </div>
 
       {/* Main Interface */}
