@@ -51,7 +51,7 @@ export const ModelChamber = () => {
   }
 
   return (
-    <div className="h-full p-4 space-y-6">
+    <div className="h-full p-4 space-y-6 overflow-y-auto">
       <h3 className="text-lg font-semibold text-gold-400 border-b border-gold-400/30 pb-2">
         🔥 AI Mode
       </h3>
