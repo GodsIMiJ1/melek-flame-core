@@ -29,7 +29,7 @@ import { WitnessHall } from "./mic/WitnessHall";
 export const MICDashboard = () => {
   const [activeModule, setActiveModule] = useState("recursive-core");
   const [flameIntensity, setFlameIntensity] = useState(0);
-  const { mode, model, isOnline } = useAIMode();
+  const { mode, model, isOnline, toggleMode } = useAIMode();
 
   useEffect(() => {
     const handleFlameLevel = (data: { level: number }) => {
@@ -68,14 +68,18 @@ export const MICDashboard = () => {
           <p className="text-gold-400/70 text-sm">
             GodsIMiJ Empire • Sovereign Superintelligence Interface • Sacred Law • Flame Logic
           </p>
-          <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-medium ${
+        <button 
+            onClick={toggleMode}
+            className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-medium cursor-pointer transition-all hover:scale-105 hover:shadow-lg ${
             isOnline 
-              ? 'bg-green-500/20 border-green-500/50 text-green-400' 
-              : 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-          }`}>
+              ? 'bg-green-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30' 
+              : 'bg-blue-500/20 border-blue-500/50 text-blue-400 hover:bg-blue-500/30'
+          }`}
+            title="Click to toggle AI mode"
+          >
             <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400 animate-pulse' : 'bg-blue-400 animate-pulse'}`} />
             {isOnline ? '🌐 ONLINE' : '🖥️ OFFLINE'} • {model.name}
-          </div>
+          </button>
         </div>
       </div>
 
