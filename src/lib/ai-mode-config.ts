@@ -1,5 +1,6 @@
 // AI Mode Configuration - Simple Online/Offline Toggle
 // Online: OpenAI gpt-4o-mini | Offline: Ollama llama3.1:8b
+// Rebuilt to pick up VITE_OPENAI_API_KEY environment variable
 
 export type AIMode = "online" | "offline";
 
