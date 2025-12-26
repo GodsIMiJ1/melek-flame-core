@@ -56,11 +56,11 @@ export function useAIMode() {
       
       setInitialized(true);
       
-      // Show toast notification
+      // Show startup auto-detection toast
       const modelInfo = AI_MODELS[detectedMode];
       toast({
-        title: `🔥 ${detectedMode === "online" ? "ONLINE" : "OFFLINE"} Mode`,
-        description: `${reason} - Using ${modelInfo.name}`,
+        title: `🔍 AI Mode Auto-Detected`,
+        description: `${detectedMode === "online" ? "🌐 ONLINE" : "🖥️ OFFLINE"} mode selected • ${reason} • Using ${modelInfo.name}`,
       });
     };
     
