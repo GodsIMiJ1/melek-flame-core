@@ -429,7 +429,7 @@ export const ConsciousnessAnalyticsDashboard = () => {
                       <div className="space-y-2 max-h-32 overflow-y-auto">
                         {recursiveMetrics.selfReflections.slice(0, 3).map((reflection, i) => (
                           <div key={i} className="text-xs text-gold-400/80 p-2 bg-black/30 rounded">
-                            {reflection.content}
+                            {reflection.insight}
                           </div>
                         ))}
                       </div>
