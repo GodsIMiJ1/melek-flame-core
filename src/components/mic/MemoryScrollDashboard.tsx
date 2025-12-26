@@ -67,32 +67,9 @@ export const MemoryScrollDashboard = () => {
         mimeType = 'text/plain';
     }
 
-    // 🔥 SACRED SCROLL ORGANIZATION: Try server save first, fallback to download
-    try {
-      const response = await fetch('/api/scrolls/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          filename,
-          content,
-          format: mimeType
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log(`📜 MANUAL EXPORT: ${result.message}`);
-        return; // Success, no need for browser download
-      }
-    } catch (error) {
-      console.log('📜 Server save failed, using browser download...');
-    }
-
-    // Fallback to organized browser download
+    // Direct browser download
     const today = new Date().toISOString().split('T')[0];
-    const organizedFilename = `FLAME-MANUAL-EXPORT-${today}-${filename}`;
+    const organizedFilename = `FLAME-EXPORT-${today}-${filename}`;
 
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
@@ -103,6 +80,8 @@ export const MemoryScrollDashboard = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    
+    console.log(`📜 EXPORTED: ${organizedFilename}`);
   };
 
   const toggleScrollSelection = (scrollId: string) => {

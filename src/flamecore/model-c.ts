@@ -1,11 +1,15 @@
 
-import { callOpenAI, getOpenAIModelName } from "@/lib/openai-api"
+import { callOpenAI, getOpenAIModelName, isOpenAIModel } from "@/lib/openai-api"
 import { ExecutorResult, ModelResponse } from "./types"
 import { AgentController } from "./agent-controller"
 import { eventBus, THOUGHT_TYPES } from "@/lib/eventBus"
+import { getCurrentModel, isOnlineMode } from "@/lib/ai-mode-config"
 
 export class ModelC {
-  private model = "openai:gpt-4o-mini" // Executor - Fast OpenAI Synthesis (Anti-Verbose)
+  // Model is now dynamic based on AI mode configuration
+  private get model(): string {
+    return getCurrentModel();
+  }
   private agentController = new AgentController()
 
   async execute(reflectorOutput: string): Promise<ExecutorResult> {
@@ -38,13 +42,24 @@ export class ModelC {
     ]
 
     try {
-      // 🤖 USING OPENAI API FOR ENHANCED EXECUTION
-      const fullResponse = await callOpenAI({
-        model: getOpenAIModelName(this.model),
-        messages,
-        temperature: 0.3, // Lower temperature for more consistent JSON output
-        max_tokens: 500
-      })
+      let fullResponse = "";
+      
+      if (isOnlineMode()) {
+        // 🤖 USING OPENAI API FOR ENHANCED EXECUTION
+        fullResponse = await callOpenAI({
+          model: getOpenAIModelName(this.model),
+          messages,
+          temperature: 0.3, // Lower temperature for more consistent JSON output
+          max_tokens: 500
+        })
+      } else {
+        // 🖥️ USING OLLAMA FOR LOCAL PROCESSING
+        const { callOllama } = await import("@/lib/ollama-api");
+        fullResponse = await callOllama({
+          model: this.model,
+          messages
+        });
+      }
 
       console.log("⚔️ EXECUTOR OUTPUT:", fullResponse)
 
