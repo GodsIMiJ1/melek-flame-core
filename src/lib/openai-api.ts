@@ -1,6 +1,7 @@
 // OpenAI API Integration for M.I.C. System
 // Provides GPT models as alternative to Ollama for consciousness processing
 
+import { getOpenAIKey } from './ai-mode-config';
 interface OpenAIMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
@@ -29,11 +30,10 @@ interface OpenAIResponse {
 }
 
 export async function streamOpenAIResponse(request: OpenAIRequest): Promise<ReadableStream> {
-  // 🔥 VITE FIX: Use Vite environment variables
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
+  const apiKey = getOpenAIKey();
 
   if (!apiKey) {
-    throw new Error('OpenAI API key not found. Please set VITE_OPENAI_API_KEY environment variable.');
+    throw new Error('OpenAI API key not found. Add it in the Models panel or set VITE_OPENAI_API_KEY.');
   }
 
   console.log(`🤖 OpenAI API Request: ${request.model} with ${request.messages.length} messages`);
@@ -60,11 +60,10 @@ export async function streamOpenAIResponse(request: OpenAIRequest): Promise<Read
 }
 
 export async function callOpenAI(request: OpenAIRequest): Promise<string> {
-  // 🔥 VITE FIX: Use Vite environment variables
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
+  const apiKey = getOpenAIKey();
 
   if (!apiKey) {
-    throw new Error('OpenAI API key not found. Please set VITE_OPENAI_API_KEY environment variable.');
+    throw new Error('OpenAI API key not found. Add it in the Models panel or set VITE_OPENAI_API_KEY.');
   }
 
   console.log(`🤖 OpenAI API Call: ${request.model} with ${request.messages.length} messages`);
@@ -96,8 +95,7 @@ export async function callOpenAI(request: OpenAIRequest): Promise<string> {
 }
 
 export async function getOpenAIModels(): Promise<string[]> {
-  // 🔥 VITE FIX: Use Vite environment variables
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
+  const apiKey = getOpenAIKey();
 
   if (!apiKey) {
     console.warn('⚠️ OpenAI API key not found');
