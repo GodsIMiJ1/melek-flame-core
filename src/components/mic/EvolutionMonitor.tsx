@@ -122,6 +122,7 @@ export function EvolutionMonitor() {
 
         // Reload stats
         await loadEvolutionStats();
+      }
     } catch (error) {
       console.error('Evolution trigger failed:', error);
       eventBus.emit('evolution-error', { error: error instanceof Error ? error.message : 'Unknown error' });
