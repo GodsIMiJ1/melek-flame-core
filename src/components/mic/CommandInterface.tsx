@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useOpenAIStream } from "@/hooks/useOpenAIStream";
-import { agents, getAgentByModel } from "@/lib/models";
+import { agents } from "@/lib/models";
 import { getOpenAIModels, DEFAULT_OPENAI_MODELS } from "@/lib/openai-api";
+import { getCurrentModel } from "@/lib/ai-mode-config";
 import { FlameLoopEngine } from "@/flamecore/loop-engine";
 import { EternalLoopControls } from "./EternalLoopControls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -161,8 +162,8 @@ export const CommandInterface = () => {
     });
 
     try {
-      // Send message using OpenAI
-      await sendMessage(input, agent.model);
+      // Send message using current AI mode model
+      await sendMessage(input, getCurrentModel());
     } catch (err) {
       const errorTimestamp = new Date().toLocaleTimeString();
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
@@ -360,7 +361,7 @@ export const CommandInterface = () => {
           <SelectContent className="bg-black border-gold-400/30">
             {agents.map((agent) => (
               <SelectItem key={agent.name} value={agent.name} className="text-gold-400">
-                {agent.name} ({agent.model})
+                {agent.name} ({agent.role})
               </SelectItem>
             ))}
           </SelectContent>

@@ -74,3 +74,42 @@ export async function getOllamaModels(): Promise<string[]> {
   console.error("❌ Could not connect to Ollama on any URL");
   return [];
 }
+
+// Non-streaming Ollama call for simple responses
+export async function callOllama({
+  model,
+  messages,
+}: OllamaChatRequest): Promise<string> {
+  const urls = ["http://127.0.0.1:11434/api/chat", "http://localhost:11434/api/chat"];
+
+  let lastError;
+  for (const url of urls) {
+    try {
+      console.log(`🔗 Calling Ollama at: ${url}`);
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: false,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Ollama API error: ${res.status} ${res.statusText}`);
+      }
+
+      const data = await res.json();
+      console.log(`✅ Ollama response received from: ${url}`);
+      return data.message?.content || "";
+    } catch (error) {
+      console.warn(`❌ Failed to call ${url}:`, error);
+      lastError = error;
+    }
+  }
+
+  throw new Error(`Failed to call Ollama on any URL. Last error: ${lastError}`);
+}

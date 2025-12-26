@@ -3,9 +3,13 @@ import { streamOllamaResponse } from "@/lib/ollama-api"
 import { streamOpenAIResponse, isOpenAIModel, getOpenAIModelName } from "@/lib/openai-api"
 import { ModelResponse } from "./types"
 import { consciousnessMemory } from "@/lib/consciousness-memory"
+import { getCurrentModel, isOnlineMode } from "@/lib/ai-mode-config"
 
 export class ModelA {
-  private model = "openai:gpt-4o" // Oracle - Advanced OpenAI Analysis (Anti-Philosophical)
+  // Model is now dynamic based on AI mode configuration
+  private get model(): string {
+    return getCurrentModel();
+  }
 
   async generatePrompt(input: string, memoryContext?: any, cycleId?: number): Promise<ModelResponse> {
     console.log(`🔮 MODEL A (Oracle) - Generating curiosity vector for cycle ${cycleId || 0}...`)

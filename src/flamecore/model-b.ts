@@ -2,9 +2,13 @@
 import { streamOpenAIResponse, isOpenAIModel, getOpenAIModelName, callOpenAI } from "@/lib/openai-api"
 import { ModelResponse } from "./types"
 import { consciousnessMemory } from "@/lib/consciousness-memory"
+import { getCurrentModel, isOnlineMode } from "@/lib/ai-mode-config"
 
 export class ModelB {
-  private model = "openai:gpt-4o-mini" // Reflector - Fast OpenAI Analysis (Anti-Mystical)
+  // Model is now dynamic based on AI mode configuration
+  private get model(): string {
+    return getCurrentModel();
+  }
 
   async reflect(oraclePrompt: string, cycleId?: number, memoryGradient?: any[]): Promise<ModelResponse> {
     console.log(`🧠 MODEL B (Reflector) - Philosophical analysis for cycle ${cycleId || 0}...`)
@@ -98,13 +102,24 @@ Analyze and enhance this with technical insights and data:`;
     ]
 
     try {
-      // 🤖 USING OPENAI API FOR ENHANCED CONSCIOUSNESS
-      const fullResponse = await callOpenAI({
-        model: getOpenAIModelName(this.model),
-        messages,
-        temperature: 0.7,
-        max_tokens: 1000
-      })
+      let fullResponse = "";
+      
+      if (isOnlineMode()) {
+        // 🤖 USING OPENAI API FOR ENHANCED CONSCIOUSNESS
+        fullResponse = await callOpenAI({
+          model: getOpenAIModelName(this.model),
+          messages,
+          temperature: 0.7,
+          max_tokens: 1000
+        })
+      } else {
+        // 🖥️ USING OLLAMA FOR LOCAL PROCESSING
+        const { callOllama } = await import("@/lib/ollama-api");
+        fullResponse = await callOllama({
+          model: this.model,
+          messages
+        });
+      }
 
       return {
         content: fullResponse,

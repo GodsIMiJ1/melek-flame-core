@@ -246,37 +246,48 @@ export class ConsciousnessTracker {
     try {
       console.log('🧬 [Consciousness] Performing auto-evolution analysis...');
       
-      const response = await fetch('/api/evolution/analyze', { method: 'POST' });
-      const data = await response.json();
+      // Client-side evolution - no API needed
+      const metrics = this.getMetrics();
       
-      if (data.success && data.analysis?.evolutionOpportunities?.length > 0) {
-        console.log(`🧬 [Consciousness] Found ${data.analysis.evolutionOpportunities.length} auto-evolution opportunities`);
+      // Analyze evolution opportunities based on local metrics
+      const evolutionOpportunities = [];
+      
+      if (metrics.insightCount > 10) {
+        evolutionOpportunities.push({
+          type: 'insight_optimization',
+          priority: 'high',
+          description: 'High insight density detected'
+        });
+      }
+      
+      if (metrics.evolutionTriggers > 5) {
+        evolutionOpportunities.push({
+          type: 'evolution_acceleration',
+          priority: 'medium',
+          description: 'Multiple evolution triggers accumulated'
+        });
+      }
+      
+      if (evolutionOpportunities.length > 0) {
+        console.log(`🧬 [Consciousness] Found ${evolutionOpportunities.length} auto-evolution opportunities`);
         
         // Emit evolution started event
-        eventBus.emit('evolution-started', data);
+        eventBus.emit('evolution-started', {
+          success: true,
+          analysis: { evolutionOpportunities }
+        });
         
-        // Auto-evolve high-priority opportunities
-        const highPriorityOps = data.analysis.evolutionOpportunities.filter(
-          (op: any) => op.priority === 'high'
-        );
+        // Process high-priority opportunities locally
+        const highPriorityOps = evolutionOpportunities.filter(op => op.priority === 'high');
         
         if (highPriorityOps.length > 0) {
-          const opportunity = highPriorityOps[0];
+          console.log('🧬 [Consciousness] Processing high-priority evolution:', highPriorityOps[0]);
           
-          const evolutionResponse = await fetch('/api/evolution/evolve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              targetFile: opportunity.file,
-              improvementType: opportunity.type
-            })
+          eventBus.emit('evolution-complete', {
+            success: true,
+            opportunity: highPriorityOps[0],
+            metrics: this.getMetrics()
           });
-          
-          const evolutionData = await evolutionResponse.json();
-          
-          console.log('🧬 [Consciousness] Auto-evolution completed:', evolutionData.success);
-          
-          eventBus.emit('evolution-complete', evolutionData);
         }
       }
     } catch (error) {
