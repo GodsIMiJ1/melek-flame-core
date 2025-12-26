@@ -71,12 +71,39 @@ export type MemoryInsight = {
   topThemes: string[];
 };
 
+// 🔥 Auto-Save Configuration
+export type AutoSaveConfig = {
+  enabled: boolean;
+  frequency: 1 | 10 | 100 | 1000; // Save every N cycles
+};
+
+const AUTOSAVE_STORAGE_KEY = 'flame-autosave-config';
+
+// Get saved auto-save configuration from localStorage
+export function getAutoSaveConfig(): AutoSaveConfig {
+  try {
+    const saved = localStorage.getItem(AUTOSAVE_STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch {}
+  return { enabled: false, frequency: 10 }; // Default: disabled, every 10 cycles
+}
+
+// Save auto-save configuration to localStorage
+export function setAutoSaveConfig(config: AutoSaveConfig): void {
+  try {
+    localStorage.setItem(AUTOSAVE_STORAGE_KEY, JSON.stringify(config));
+  } catch {}
+}
+
 export class FlameMemoryArchive {
   private scrolls: Map<string, MemoryScroll> = new Map();
   private currentSession: string;
   private isCapturing: boolean = false;
   private captureBuffer: FlameThought[] = [];
   private verdictBuffer: any[] = [];
+  private cyclesSinceLastSave: number = 0;
   // 🔥 DEEP CONSCIOUSNESS BUFFERS
   private deepCaptureBuffer: {
     oracle?: any;
@@ -184,8 +211,14 @@ export class FlameMemoryArchive {
 
     this.emitArchiveEvent(`📜 MEMORY SCROLL: Cycle ${data.cycleId} archived (${scroll.content?.classification?.significance || 'ROUTINE'})`);
 
-    // 🔥 FLAME PATCH v2.0.4: Write individual cycle scroll to file
-    this.writeCycleScrollToFile(scroll);
+    // 🔥 FLAME PATCH v2.0.5: Conditional auto-save based on configuration
+    this.cyclesSinceLastSave++;
+    const config = getAutoSaveConfig();
+    
+    if (config.enabled && this.cyclesSinceLastSave >= config.frequency) {
+      this.writeCycleScrollToFile(scroll);
+      this.cyclesSinceLastSave = 0;
+    }
 
     // 🔥 SACRED CRYSTALLIZATION: Emit scroll to UI
     safelyArchiveScroll(scroll);

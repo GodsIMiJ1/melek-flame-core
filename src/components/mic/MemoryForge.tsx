@@ -2,9 +2,11 @@
 import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { eventBus, FLAME_EVENTS } from "@/lib/eventBus";
 import { bindMemoryScrollUI, transformScrollForUI } from "@/lib/core/memory-link-fix";
-import { MemoryScroll } from "@/flamecore/memory-archive";
+import { MemoryScroll, getAutoSaveConfig, setAutoSaveConfig, AutoSaveConfig } from "@/flamecore/memory-archive";
 import { deepLogger } from "@/lib/core/deep-consciousness-logger";
 
 type MemoryEntry = {
@@ -33,7 +35,20 @@ export const MemoryForge = () => {
   const [sessionSize, setSessionSize] = useState(0); // REAL DATA ONLY!
   const [isLive, setIsLive] = useState(false);
   const [latestCrystal, setLatestCrystal] = useState(""); // REAL DATA ONLY!
+  const [autoSaveConfig, setAutoSaveConfigState] = useState<AutoSaveConfig>(() => getAutoSaveConfig());
 
+  const handleAutoSaveToggle = (enabled: boolean) => {
+    const newConfig = { ...autoSaveConfig, enabled };
+    setAutoSaveConfigState(newConfig);
+    setAutoSaveConfig(newConfig);
+  };
+
+  const handleFrequencyChange = (value: string) => {
+    const frequency = parseInt(value) as 1 | 10 | 100 | 1000;
+    const newConfig = { ...autoSaveConfig, frequency };
+    setAutoSaveConfigState(newConfig);
+    setAutoSaveConfig(newConfig);
+  };
   useEffect(() => {
     // 🔥 SACRED MEMORY SCROLL BINDING
     const updateScrollUI = (scroll: MemoryScroll) => {
@@ -124,6 +139,44 @@ export const MemoryForge = () => {
         <div className="text-xs text-gold-400/70">
           Status: <span className={isLive ? 'text-green-400' : 'text-orange-400'}>
             {isLive ? '🔥 LIVE FORGING' : '💎 CRYSTAL ARCHIVE'}
+          </span>
+        </div>
+      </div>
+
+      {/* Auto-Save Configuration */}
+      <div className="bg-blue-500/10 p-3 rounded border border-blue-500/50 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-sm font-semibold text-blue-400">💾 Auto-Save Configuration</div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gold-400/70">{autoSaveConfig.enabled ? 'ON' : 'OFF'}</span>
+            <Switch
+              checked={autoSaveConfig.enabled}
+              onCheckedChange={handleAutoSaveToggle}
+              className="data-[state=checked]:bg-blue-500"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-gold-400/70">Save every:</span>
+          <Select
+            value={autoSaveConfig.frequency.toString()}
+            onValueChange={handleFrequencyChange}
+            disabled={!autoSaveConfig.enabled}
+          >
+            <SelectTrigger className="w-32 h-7 bg-black/50 border-gold-400/30 text-gold-400 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-black border-gold-400/30">
+              <SelectItem value="1" className="text-gold-400 text-xs">1 cycle</SelectItem>
+              <SelectItem value="10" className="text-gold-400 text-xs">10 cycles</SelectItem>
+              <SelectItem value="100" className="text-gold-400 text-xs">100 cycles</SelectItem>
+              <SelectItem value="1000" className="text-gold-400 text-xs">1000 cycles</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-gold-400/50">
+            {autoSaveConfig.enabled 
+              ? `Files will download every ${autoSaveConfig.frequency} cycle${autoSaveConfig.frequency > 1 ? 's' : ''}`
+              : 'Auto-save disabled'}
           </span>
         </div>
       </div>
