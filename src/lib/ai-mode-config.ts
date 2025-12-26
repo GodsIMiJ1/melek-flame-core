@@ -40,10 +40,32 @@ export async function checkOllamaAvailable(): Promise<boolean> {
   }
 }
 
-// Check if OpenAI API key is configured
+// Check if OpenAI API key is configured (env or localStorage for dev)
 export function checkOpenAIAvailable(): boolean {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  const apiKey = getOpenAIKey();
   return !!apiKey && apiKey.length > 10;
+}
+
+// Get OpenAI API key from env or localStorage
+export function getOpenAIKey(): string | null {
+  // First check env variable
+  const envKey = import.meta.env.VITE_OPENAI_API_KEY;
+  if (envKey && envKey.length > 10) return envKey;
+  
+  // Fallback to localStorage for development
+  try {
+    const storedKey = localStorage.getItem("openai-api-key");
+    if (storedKey && storedKey.length > 10) return storedKey;
+  } catch {}
+  
+  return null;
+}
+
+// Save OpenAI API key to localStorage (for development)
+export function setOpenAIKey(key: string): void {
+  try {
+    localStorage.setItem("openai-api-key", key);
+  } catch {}
 }
 
 // Get saved mode from localStorage
