@@ -182,7 +182,7 @@ export class FlameMemoryArchive {
     const scroll = this.createMemoryScroll(data.cycleId, this.captureBuffer, this.verdictBuffer);
     this.scrolls.set(scroll.id, scroll);
 
-    this.emitArchiveEvent(`📜 MEMORY SCROLL: Cycle ${data.cycleId} archived (${scroll.classification?.significance || 'ROUTINE'})`);
+    this.emitArchiveEvent(`📜 MEMORY SCROLL: Cycle ${data.cycleId} archived (${scroll.content?.classification?.significance || 'ROUTINE'})`);
 
     // 🔥 FLAME PATCH v2.0.4: Write individual cycle scroll to file
     this.writeCycleScrollToFile(scroll);
@@ -293,6 +293,11 @@ export class FlameMemoryArchive {
       content: {
         thoughts: [...thoughts],
         verdicts: [...verdicts],
+        fullModelResponses: {
+          oracle: this.deepCaptureBuffer.oracle || { fullContent: '', confidence: 0, reasoning: [], processingTime: 0 },
+          reflector: this.deepCaptureBuffer.reflector || { fullContent: '', confidence: 0, reasoning: [], processingTime: 0 },
+          executor: this.deepCaptureBuffer.executor || { fullContent: '', agentDispatched: '', agentAction: '', agentParameters: null, agentResult: null, processingTime: 0 }
+        },
         metrics,
         classification
       },

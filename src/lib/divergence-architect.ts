@@ -131,7 +131,7 @@ export class DivergenceArchitect {
     }, {} as Record<string, number>);
     
     // If any type appears more than once in recent history, force variety
-    const hasRepetition = Object.values(typeFrequency).some(count => count > 1);
+    const hasRepetition = Object.values(typeFrequency).some((count: number) => count > 1);
     
     if (hasRepetition) {
       console.log('🧬 [Divergence Architect] Divergence type repetition detected, forcing variety...');
