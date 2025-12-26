@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useOpenAIStream } from "@/hooks/useOpenAIStream";
+import { useUnifiedAI } from "@/hooks/useUnifiedAI";
 import { agents } from "@/lib/models";
-import { getOpenAIModels, DEFAULT_OPENAI_MODELS } from "@/lib/openai-api";
-import { getCurrentModel } from "@/lib/ai-mode-config";
+import { getCurrentMode, getCurrentModel } from "@/lib/ai-mode-config";
 import { FlameLoopEngine } from "@/flamecore/loop-engine";
 import { EternalLoopControls } from "./EternalLoopControls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -53,7 +52,6 @@ const loadChatHistory = (deviceId: string): any[] => {
 export const CommandInterface = () => {
   const [input, setInput] = useState("");
   const [selectedAgent, setSelectedAgent] = useState(agents[0]?.name || "Nexus");
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [deviceId] = useState(() => getDeviceId());
   const [history, setHistory] = useState<Array<{type: 'command' | 'response' | 'system', text: string, timestamp: string, agent?: string, deviceId?: string}>>(() => {
     try {
@@ -71,7 +69,7 @@ export const CommandInterface = () => {
   const [flameEngine] = useState(() => new FlameLoopEngine());
   const [isFlameRunning, setIsFlameRunning] = useState(false);
 
-  const { messages, isLoading, error, sendMessage, clearMessages } = useOpenAIStream();
+  const { messages, isLoading, error, sendMessage, clearMessages, currentMode, currentModel } = useUnifiedAI();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -79,20 +77,6 @@ export const CommandInterface = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  useEffect(() => {
-    // Check available OpenAI models on component mount
-    getOpenAIModels().then(models => {
-      if (models.length === 0) {
-        setAvailableModels(DEFAULT_OPENAI_MODELS);
-      } else {
-        setAvailableModels(models);
-      }
-    }).catch(() => {
-      // Fallback to default models if API call fails
-      setAvailableModels(DEFAULT_OPENAI_MODELS);
-    });
-  }, []);
 
   useEffect(() => {
     // Sync OpenAI messages with local history
@@ -162,8 +146,8 @@ export const CommandInterface = () => {
     });
 
     try {
-      // Send message using current AI mode model
-      await sendMessage(input, getCurrentModel());
+      // Send message using unified AI (respects online/offline mode)
+      await sendMessage(input);
     } catch (err) {
       const errorTimestamp = new Date().toLocaleTimeString();
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
@@ -252,7 +236,7 @@ export const CommandInterface = () => {
       setHistory(prev => {
         const newHistory = [...prev, {
           type: 'system' as const,
-          text: '🔗 Testing OpenAI API connection...',
+          text: `🔗 Testing ${currentMode.toUpperCase()} connection (${currentModel})...`,
           timestamp: new Date().toLocaleTimeString(),
           agent: 'FLAME_ENGINE',
           deviceId
@@ -261,15 +245,10 @@ export const CommandInterface = () => {
         return newHistory;
       });
 
-      const models = await getOpenAIModels();
-      if (models.length === 0) {
-        throw new Error("No OpenAI models found. Please ensure VITE_OPENAI_API_KEY is set");
-      }
-
       setHistory(prev => {
         const newHistory = [...prev, {
           type: 'system' as const,
-          text: `✅ Connected! Found ${models.length} models: ${models.slice(0, 3).join(', ')}${models.length > 3 ? '...' : ''}`,
+          text: `✅ Using ${currentMode.toUpperCase()} mode with model: ${currentModel}`,
           timestamp: new Date().toLocaleTimeString(),
           agent: 'FLAME_ENGINE',
           deviceId
@@ -366,8 +345,8 @@ export const CommandInterface = () => {
             ))}
           </SelectContent>
         </Select>
-        <div className="text-xs text-gold-400/60">
-          Models: {availableModels.length > 0 ? availableModels.length : 'Checking...'}
+        <div className={`text-xs px-2 py-1 rounded ${currentMode === 'online' ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'}`}>
+          {currentMode === 'online' ? '🌐' : '🖥️'} {currentModel}
         </div>
         <Button
           onClick={isFlameRunning ? stopFlameLoop : startFlameLoop}
