@@ -1,6 +1,5 @@
 // AI Mode Configuration - Simple Online/Offline Toggle
-// Online: OpenAI gpt-4o-mini | Offline: Ollama llama3.1:8b
-// Rebuilt to pick up VITE_OPENAI_API_KEY environment variable
+// Online: OpenAI gpt-4o-mini (via edge function proxy) | Offline: Ollama llama3.1:8b
 
 export type AIMode = "online" | "offline";
 
@@ -12,8 +11,8 @@ export const AI_MODELS = {
   online: {
     name: "gpt-4o-mini",
     fullName: "openai:gpt-4o-mini",
-    provider: "OpenAI",
-    description: "Fast cloud-based reasoning"
+    provider: "OpenAI (Cloud Proxy)",
+    description: "Fast cloud-based reasoning via edge function"
   },
   offline: {
     name: "llama3.1:8b",
@@ -40,32 +39,22 @@ export async function checkOllamaAvailable(): Promise<boolean> {
   }
 }
 
-// Check if OpenAI API key is configured (env or localStorage for dev)
+// Check if OpenAI is available (via edge function proxy - always true when Cloud is enabled)
 export function checkOpenAIAvailable(): boolean {
-  const apiKey = getOpenAIKey();
-  return !!apiKey && apiKey.length > 10;
+  // OpenAI is available via edge function proxy when VITE_SUPABASE_URL is set
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  return !!supabaseUrl && supabaseUrl.length > 10;
 }
 
-// Get OpenAI API key from env or localStorage
+// Legacy functions kept for compatibility
 export function getOpenAIKey(): string | null {
-  // First check env variable
-  const envKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (envKey && envKey.length > 10) return envKey;
-  
-  // Fallback to localStorage for development
-  try {
-    const storedKey = localStorage.getItem("openai-api-key");
-    if (storedKey && storedKey.length > 10) return storedKey;
-  } catch {}
-  
-  return null;
+  // No longer needed - API key is in edge function secrets
+  return "proxy-mode";
 }
 
-// Save OpenAI API key to localStorage (for development)
-export function setOpenAIKey(key: string): void {
-  try {
-    localStorage.setItem("openai-api-key", key);
-  } catch {}
+export function setOpenAIKey(_key: string): void {
+  // No longer needed - API key is in edge function secrets
+  console.log("OpenAI API key is now managed via Cloud secrets");
 }
 
 // Get saved mode from localStorage

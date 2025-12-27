@@ -1,11 +1,10 @@
 // Simplified Model Chamber - Online/Offline Toggle
-import { useState, useEffect } from "react";
+// OpenAI now uses Cloud edge function proxy (no local API key needed)
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
 import { useAIMode } from "@/hooks/useAIMode";
-import { getOpenAIKey, setOpenAIKey } from "@/lib/ai-mode-config";
-import { Wifi, WifiOff, RefreshCw, Loader2, Key, Eye, EyeOff, Check } from "lucide-react";
+import { Wifi, WifiOff, RefreshCw, Loader2, Cloud, CheckCircle2 } from "lucide-react";
 
 export const ModelChamber = () => {
   const {
@@ -18,26 +17,6 @@ export const ModelChamber = () => {
     runAutoDetect,
     checkAvailability
   } = useAIMode();
-
-  const [apiKeyInput, setApiKeyInput] = useState("");
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [keySaved, setKeySaved] = useState(false);
-
-  useEffect(() => {
-    const existingKey = getOpenAIKey();
-    if (existingKey) {
-      setApiKeyInput(existingKey);
-      setKeySaved(true);
-    }
-  }, []);
-
-  const handleSaveApiKey = () => {
-    if (apiKeyInput.trim().length > 10) {
-      setOpenAIKey(apiKeyInput.trim());
-      setKeySaved(true);
-      checkAvailability();
-    }
-  };
 
   if (!initialized) {
     return (
@@ -95,15 +74,15 @@ export const ModelChamber = () => {
           {/* OpenAI Status */}
           <div className="flex items-center justify-between p-2 bg-black/30 rounded">
             <div className="flex items-center gap-2">
-              <Wifi className="w-4 h-4 text-blue-400" />
-              <span className="text-sm text-gold-400">OpenAI (gpt-4o-mini)</span>
+              <Cloud className="w-4 h-4 text-blue-400" />
+              <span className="text-sm text-gold-400">OpenAI (Cloud Proxy)</span>
             </div>
             <div className={`text-xs px-2 py-1 rounded ${
               status.openaiAvailable 
                 ? "bg-green-500/20 text-green-400" 
                 : "bg-red-500/20 text-red-400"
             }`}>
-              {status.checking ? "Checking..." : status.openaiAvailable ? "✅ Ready" : "❌ No API Key"}
+              {status.checking ? "Checking..." : status.openaiAvailable ? "✅ Ready" : "❌ Not Configured"}
             </div>
           </div>
 
@@ -167,52 +146,21 @@ export const ModelChamber = () => {
         </div>
       </div>
 
-      {/* OpenAI API Key Input */}
-      <div className="bg-black/50 p-4 rounded-lg border border-gold-400/30 space-y-3">
-        <div className="text-sm font-semibold text-orange-400 flex items-center gap-2">
-          <Key className="w-4 h-4" />
-          OpenAI API Key
+      {/* Cloud Status */}
+      <div className="bg-black/50 p-4 rounded-lg border border-green-400/30 space-y-3">
+        <div className="text-sm font-semibold text-green-400 flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4" />
+          Cloud Proxy Enabled
         </div>
-        
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Input
-                type={showApiKey ? "text" : "password"}
-                placeholder="sk-..."
-                value={apiKeyInput}
-                onChange={(e) => {
-                  setApiKeyInput(e.target.value);
-                  setKeySaved(false);
-                }}
-                className="bg-black/50 border-gold-400/30 text-gold-400 text-xs pr-8"
-              />
-              <button
-                type="button"
-                onClick={() => setShowApiKey(!showApiKey)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gold-400/50 hover:text-gold-400"
-              >
-                {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-            <Button
-              size="sm"
-              onClick={handleSaveApiKey}
-              disabled={apiKeyInput.length < 10 || keySaved}
-              className={`text-xs ${keySaved ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'} hover:bg-blue-500/30`}
-            >
-              {keySaved ? <Check className="w-4 h-4" /> : "Save"}
-            </Button>
-          </div>
-          <p className="text-xs text-gold-400/50">
-            Stored in browser localStorage for development
-          </p>
-        </div>
+        <p className="text-xs text-gold-400/70">
+          OpenAI API calls are routed through a secure Cloud edge function.
+          No local API key required - credentials are stored securely in Cloud secrets.
+        </p>
       </div>
 
       {/* Help Text */}
       <div className="text-xs text-gold-400/50 p-3 bg-black/30 rounded border border-gold-400/20">
-        <p><strong>ONLINE:</strong> Paste your OpenAI API key above</p>
+        <p><strong>ONLINE:</strong> Uses OpenAI via Cloud proxy (no setup needed)</p>
         <p><strong>OFFLINE:</strong> Requires Ollama running locally</p>
         <p className="mt-2">Start Ollama: <code className="bg-black/50 px-1 rounded">ollama serve</code></p>
       </div>
