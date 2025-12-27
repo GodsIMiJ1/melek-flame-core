@@ -1,7 +1,9 @@
 // OpenAI API Integration for M.I.C. System
 // Provides GPT models as alternative to Ollama for consciousness processing
+// Uses edge function proxy to avoid CORS issues
 
-import { getOpenAIKey } from './ai-mode-config';
+import { supabase } from '@/integrations/supabase/client';
+
 interface OpenAIMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
@@ -29,50 +31,38 @@ interface OpenAIResponse {
   }
 }
 
+const PROXY_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/openai-proxy`;
+
 export async function streamOpenAIResponse(request: OpenAIRequest): Promise<ReadableStream> {
-  const apiKey = getOpenAIKey();
+  console.log(`🤖 OpenAI Proxy Request: ${request.model} with ${request.messages.length} messages (streaming)`);
 
-  if (!apiKey) {
-    throw new Error('OpenAI API key not found. Add it in the Models panel or set VITE_OPENAI_API_KEY.');
-  }
-
-  console.log(`🤖 OpenAI API Request: ${request.model} with ${request.messages.length} messages`);
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch(PROXY_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
       ...request,
-      stream: true // Always use streaming for real-time consciousness
+      stream: true
     })
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('🚨 OpenAI API Error:', response.status, errorText);
-    throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+    console.error('🚨 OpenAI Proxy Error:', response.status, errorText);
+    throw new Error(`OpenAI Proxy error: ${response.status} - ${errorText}`);
   }
 
   return response.body!;
 }
 
 export async function callOpenAI(request: OpenAIRequest): Promise<string> {
-  const apiKey = getOpenAIKey();
+  console.log(`🤖 OpenAI Proxy Call: ${request.model} with ${request.messages.length} messages`);
 
-  if (!apiKey) {
-    throw new Error('OpenAI API key not found. Add it in the Models panel or set VITE_OPENAI_API_KEY.');
-  }
-
-  console.log(`🤖 OpenAI API Call: ${request.model} with ${request.messages.length} messages`);
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch(PROXY_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
       ...request,
@@ -82,50 +72,22 @@ export async function callOpenAI(request: OpenAIRequest): Promise<string> {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('🚨 OpenAI API Error:', response.status, errorText);
-    throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+    console.error('🚨 OpenAI Proxy Error:', response.status, errorText);
+    throw new Error(`OpenAI Proxy error: ${response.status} - ${errorText}`);
   }
 
   const data: OpenAIResponse = await response.json();
   const content = data.choices[0]?.message?.content || '';
 
-  console.log(`✅ OpenAI Response: ${content.length} characters, ${data.usage.total_tokens} tokens`);
+  console.log(`✅ OpenAI Response: ${content.length} characters, ${data.usage?.total_tokens || 0} tokens`);
 
   return content;
 }
 
 export async function getOpenAIModels(): Promise<string[]> {
-  const apiKey = getOpenAIKey();
-
-  if (!apiKey) {
-    console.warn('⚠️ OpenAI API key not found');
-    return [];
-  }
-
-  try {
-    const response = await fetch('https://api.openai.com/v1/models', {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
-      }
-    });
-
-    if (!response.ok) {
-      console.warn('⚠️ Failed to fetch OpenAI models:', response.status);
-      return [];
-    }
-
-    const data = await response.json();
-    const models = data.data
-      .filter((model: any) => model.id.includes('gpt'))
-      .map((model: any) => `openai:${model.id}`)
-      .sort();
-
-    console.log(`✅ Found ${models.length} OpenAI models`);
-    return models;
-  } catch (error) {
-    console.warn('⚠️ Error fetching OpenAI models:', error);
-    return [];
-  }
+  // Return default models - no need to call API since we use the proxy
+  console.log('✅ Returning default OpenAI models (using proxy)');
+  return DEFAULT_OPENAI_MODELS;
 }
 
 // Helper function to check if a model is OpenAI
